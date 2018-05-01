@@ -1,0 +1,34 @@
+{
+  "translations": {
+    "de": {
+      "Indoor Temperature": "Innentemperatur",
+      "Outdoor Temperature": "Außentemperatur",
+      "Dewpoint": "Taupunkt",
+      "Windchill": "gefühlte Temperatur",
+      "Indoor Humidity": "Luftfeuchtigkeit Innen",
+      "Outdoor Humidity": "Luftfeuchtigkeit Außen",
+      "Windspeed": "Windgeschwindigkeit",
+      "Wind gust": "Windböe",
+      "Wind Direction": "Windrichtung",
+      "Air Pressure absolut": "Luftdruck absolut",
+      "Air Pressure": "Luftdruck",
+      "Rain": "Niederschlag",
+      "Daily Rain": "Niederschlag täglich",
+      "Weekly Rain": "Niederschlag wöchentlich",
+      "Monthly Rain": "Niederschlag monatlich",
+      "Solar Radiation": "Sonneneinstrahlung",
+      "UV": "UV",
+      "Date": "Datum",
+      "Software Type": "Software Typ",
+      "Action": "Aktion",
+      "Realtime": "Zeit real",
+      "Frequence": "Frequenz",
+      "MAC adress": "MAC Adresse",
+      "MAC": "MAC",
+      "Creating instance.": "Die Instanz wird erstellt.",
+      "Device created.": "Gerät angelegt.",
+      "interface closed.": "Interface geschlossen.",
+      "MAC must not be empty.": "MAC Adresse darf nicht leer sein."
+    }
+  }
+}

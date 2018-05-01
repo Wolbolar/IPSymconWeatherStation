@@ -1,0 +1,11 @@
+{
+	"id": "{FBDB2770-0232-43D2-F40B-1240CEAF6CD4}",
+	"name": "WeatherStation",
+	"type": 3,
+	"vendor": "Sainlogic",
+	"aliases": ["WeatherStation"],
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "WeatherStation"
+}

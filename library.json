@@ -1,0 +1,13 @@
+{
+	"id": "{C0D15C1B-9FE3-FF61-CCB1-C9EE0C9EB780}",
+	"author": "Fonzo",
+	"name": "WeatherStation",
+	"url": "https://github.com/Wolbolar/IPSymconSainlogicWeatherStation",
+	"compatibility": {
+    "version": "4.2",
+    "date": 1491343200
+	},
+	"version": "0.1",
+	"build": 0,
+	"date": 0
+}
