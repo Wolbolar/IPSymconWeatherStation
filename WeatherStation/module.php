@@ -161,25 +161,33 @@ class WeatherStation extends IPSModule
 
 	public function ReceiveData($JSONString) {
 
+		$this->SendDebug("Weatherstation:", $JSONString, 0);
 		$payload = json_decode($JSONString);
-		$this->SendDebug("Weatherstation:", json_encode($payload->Buffer), 0);
-
-		$this->WriteData($payload->Buffer);
-
+		$type = $payload->Type;
+		if($type == 0)
+		{
+			$this->SendDebug("Weatherstation:", json_encode($payload->Buffer), 0);
+			$this->WriteData($payload->Buffer);
+		}
 	}
 
-	protected function WriteData($data)
+	protected function WriteData($payloadraw)
 	{
+		$payload = substr($payloadraw,4,strlen($payloadraw)-4);
+		$url = "http://192.168.1.1/".$payload;
+		$this->SendDebug("Weatherstation:", $url, 0);
+		$query = parse_url($url, PHP_URL_QUERY);
+		parse_str($query, $data);
 		$temp_unit = $this->ReadPropertyInteger("temp_unit");
 		$speed_unit = $this->ReadPropertyInteger("speed_unit");
 		$pressure_unit = $this->ReadPropertyInteger("pressure_unit");
-		$indoor_temperature = $data->indoortempf;
+		$indoor_temperature = $data["indoortempf"];
 		$this->SendDebug("Weatherstation:", "indoor temperature: " . $indoor_temperature, 0);
-		$temperature = $data->tempf;
+		$temperature = $data["tempf"];
 		$this->SendDebug("Weatherstation:", "temperature: " . $temperature, 0);
-		$dewpoint = $data->dewptf;
+		$dewpoint = $data["dewptf"];
 		$this->SendDebug("Weatherstation:", "dewpoint: " . $dewpoint, 0);
-		$windchill = $data->windchillf;
+		$windchill = $data["windchillf"];
 		$this->SendDebug("Weatherstation:", "windchill: " . $windchill, 0);
 		if($temp_unit == 1)
 		{
@@ -195,15 +203,15 @@ class WeatherStation extends IPSModule
 			$this->SetValue("Windchill", $dewpoint);
 			$this->SetValue("Dewpoint", $windchill);
 		}
-		$indoorhumidity = $data->indoorhumidity;
+		$indoorhumidity = $data["indoorhumidity"];
 		$this->SendDebug("Weatherstation:", "indoor humidity: " . $indoorhumidity, 0);
-		$humidity = $data->humidity;
+		$humidity = $data["humidity"];
 		$this->SendDebug("Weatherstation:", "windchill: " . $humidity, 0);
 		$this->SetValue("Indoor_Humidity", $indoorhumidity);
 		$this->SetValue("Outdoor_Humidity", $humidity);
-		$windspeed = $data->windspeedmph;
+		$windspeed = $data["windspeedmph"];
 		$this->SendDebug("Weatherstation:", "windspeed: " . $windspeed, 0);
-		$windgust = $data->windgustmph;
+		$windgust = $data["windgustmph"];
 		$this->SendDebug("Weatherstation:", "windgust: " . $windgust, 0);
 		if($speed_unit == 1)
 		{
@@ -217,12 +225,12 @@ class WeatherStation extends IPSModule
 			$this->SetValue("Windspeed_ms", $this->MPHToMS($windspeed));
 			$this->SetValue("Windgust", $windgust);
 		}
-		$winddir = $data->winddir;
+		$winddir = $data["winddir"];
 		$this->SendDebug("Weatherstation:", "wind direction: " . $winddir, 0);
 		$this->SetValue("Wind_Direction", $winddir);
-		$absbaromin = $data->absbaromin;
+		$absbaromin = $data["absbaromin"];
 		$this->SendDebug("Weatherstation:", "barometer min: " . $absbaromin, 0);
-		$baromin = $data->baromin;
+		$baromin = $data["baromin"];
 		$this->SendDebug("Weatherstation:", "abs barometer min: " . $baromin, 0);
 
 		if($pressure_unit == 1)
@@ -235,27 +243,27 @@ class WeatherStation extends IPSModule
 			$this->SetValue("absbaromin", $absbaromin);
 			$this->SetValue("baromin", $baromin);
 		}
-		$rainin = $data->rainin;
+		$rainin = $data["rainin"];
 		$this->SendDebug("Weatherstation:", "rain: " . $rainin, 0);
-		$dailyrainin = $data->dailyrainin;
+		$dailyrainin = $data["dailyrainin"];
 		$this->SendDebug("Weatherstation:", "daily rain: " . $dailyrainin, 0);
-		$weeklyrainin = $data->weeklyrainin;
+		$weeklyrainin = $data["weeklyrainin"];
 		$this->SendDebug("Weatherstation:", "weekly rain: " . $weeklyrainin, 0);
-		$monthlyrainin = $data->monthlyrainin;
+		$monthlyrainin = $data["monthlyrainin"];
 		$this->SendDebug("Weatherstation:", "monthly rain: " . $monthlyrainin, 0);
-		$solarradiation = $data->solarradiation;
+		$solarradiation = $data["solarradiation"];
 		$this->SendDebug("Weatherstation:", "solar radiation: " . $solarradiation, 0);
-		$uv = $data->UV;
+		$uv = $data["UV"];
 		$this->SendDebug("Weatherstation:", "uv: " . $uv, 0);
-		$dateutc = $data->dateutc;
+		$dateutc = $data["dateutc"];
 		$this->SendDebug("Weatherstation:", "date utc: " . $dateutc, 0);
-		$softwaretype = $data->softwaretype;
+		$softwaretype = $data["softwaretype"];
 		$this->SendDebug("Weatherstation:", "software type: " . $softwaretype, 0);
-		$action = $data->action;
+		$action = $data["action"];
 		$this->SendDebug("Weatherstation:", "action: " . $action, 0);
-		$realtime = $data->realtime;
+		$realtime = $data["realtime"];
 		$this->SendDebug("Weatherstation:", "realtime: " . $realtime, 0);
-		$rtfreq = $data->rtfreq;
+		$rtfreq = $data["rtfreq"];
 		$this->SendDebug("Weatherstation:", "rt freq: " . $rtfreq, 0);
 
 		$this->SetValue("rainin", $rainin);
