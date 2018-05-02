@@ -17,6 +17,8 @@ class WeatherStation extends IPSModule
 
 		$this->RegisterPropertyString('Wunderground_Station_ID', '');
 		$this->RegisterPropertyString('Wunderground_Station_Password', '');
+		$this->RegisterPropertyString('Weathercloud_ID', '');
+		$this->RegisterPropertyString('Weathercloud_Key', '');
 		$this->RegisterPropertyString("ApiKey", "");
 		$this->RegisterPropertyString("ApplicationKey", "ac14c2f0d58541d0a4714e51d97785e95728ce6ade5743dc8bec238fcc2c715b"); // API_Development_Key
 		$this->RegisterPropertyString("MAC", "");
@@ -24,6 +26,15 @@ class WeatherStation extends IPSModule
 		$this->RegisterPropertyInteger('speed_unit', 1);
 		$this->RegisterPropertyInteger('pressure_unit', 1);
 		$this->RegisterPropertyInteger('rain_unit', 1);
+
+		$this->RegisterPropertyInteger('UpdateInterval_Wunderground', 20);
+		$this->RegisterTimer('WundergroundTimerUpdate', 0, 'WeatherStation_Update_Wunderground(' . $this->InstanceID . ');');
+
+		$this->RegisterPropertyInteger('UpdateInterval_Weathercloud', 10);
+		$this->RegisterTimer('WeathercloudTimerUpdate', 0, 'WeatherStation_Update_Weathercloud(' . $this->InstanceID . ');');
+
+		$this->RegisterPropertyInteger('UpdateInterval_Weatherbug', 10);
+		$this->RegisterTimer('WeatherbugTimerUpdate', 0, 'WeatherStation_Update_Weatherbug(' . $this->InstanceID . ');');
 	}
 
 	public function ApplyChanges()
@@ -112,8 +123,39 @@ class WeatherStation extends IPSModule
 			$this->SetStatus(201);
 		}
 		else{
+			// set interval
+			$this->SetUpdateIntervallWunderground();
+			$this->SetUpdateIntervallWeathercloud();
+			$this->SetUpdateIntervallWeatherbug();
 			$this->SetStatus(102);
 		}
+	}
+
+	/**
+	 * set / unset update interval
+	 */
+	protected function SetUpdateIntervallWunderground()
+	{
+		$interval = $this->ReadPropertyInteger('UpdateInterval_Wunderground') * 1000;
+		$this->SetTimerInterval('WundergroundTimerUpdate', $interval);
+	}
+
+	/**
+	 * set / unset update interval
+	 */
+	protected function SetUpdateIntervallWeathercloud()
+	{
+		$interval = $this->ReadPropertyInteger('UpdateInterval_Weathercloud') * 1000 * 60;
+		$this->SetTimerInterval('WeathercloudTimerUpdate', $interval);
+	}
+
+	/**
+	 * set / unset update interval
+	 */
+	protected function SetUpdateIntervallWeatherbug()
+	{
+		$interval = $this->ReadPropertyInteger('UpdateInterval_Weatherbug') * 1000 * 60;
+		$this->SetTimerInterval('WeatherbugTimerUpdate', $interval);
 	}
 
 	public function GetData()
@@ -288,27 +330,7 @@ class WeatherStation extends IPSModule
 		$wunderground_station_password = $this->ReadPropertyString('Wunderground_Station_Password');
 		// get data for wunderground
 
-		$param = '&dateutc=' . rawurlencode(date('Y-m-d G:i:s', time()));
-		$param .= '&indoortempf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Indoor_Temp"))));
-		$param .= '&tempf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Outdoor_Temp"))));
-		$param .= '&dewptf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Dewpoint"))));
-		$param .= '&windchillf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windchill"))));
-		$param .= '&indoorhumidity=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Indoor_Humidity"))));
-		$param .= '&humidity=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Outdoor_Humidity"))));
-		$param .= '&windspeedmph=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windspeed_km"))));
-		$param .= '&windgustmph=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windgust"))));
-		$param .= '&winddir=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Wind_Direction"))));
-		$param .= '&absbaromin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("absbaromin"))));
-		$param .= '&baromin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("baromin"))));
-		$param .= '&rainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("rainin"))));
-		$param .= '&dailyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("dailyrainin"))));
-		$param .= '&weeklyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("weeklyrainin"))));
-		$param .= '&monthlyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("monthlyrainin"))));
-		$param .= '&solarradiation=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("solarradiation"))));
-		$param .= '&UV=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("UV"))));
-		$param .= '&softwaretype=EasyWeatherV1.2.1';
-		$param .= '&realtime=1';
-		$param .= '&rtfreq=5';
+		$param = $this->GetParameters();
 
 		$url = $wunderground_url . '?ID=' . $wunderground_station_id . '&PASSWORD=' . $wunderground_station_password . '&action=updateraw' . $param;
 		$this->SendDebug("Weatherstation:", 'http-get: url=' . $url, 0);
@@ -341,6 +363,53 @@ class WeatherStation extends IPSModule
 		}
 		$this->SetValue('Wunderground', true);
 		*/
+	}
+
+	public function Update_Weathercloud()
+	{
+		$weathercloud_url = 'http://api.weathercloud.net/v01/set?';
+		$param = $this->GetParameters();
+		$url = $weathercloud_url . $param;
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HEADER, false);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_exec($ch);
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		if ($httpcode != 200) {
+			$err = " => got http-code $httpcode from weathercloud";
+			$this->SendDebug("Weatherstation:", $err, 0);
+		}
+	}
+
+	public function Update_Weatherbug()
+	{}
+
+	protected function GetParameters()
+	{
+		$param = '&dateutc=' . rawurlencode(date('Y-m-d G:i:s', time()));
+		$param .= '&indoortempf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Indoor_Temp"))));
+		$param .= '&tempf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Outdoor_Temp"))));
+		$param .= '&dewptf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Dewpoint"))));
+		$param .= '&windchillf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windchill"))));
+		$param .= '&indoorhumidity=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Indoor_Humidity"))));
+		$param .= '&humidity=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Outdoor_Humidity"))));
+		$param .= '&windspeedmph=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windspeed_km"))));
+		$param .= '&windgustmph=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windgust"))));
+		$param .= '&winddir=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Wind_Direction"))));
+		$param .= '&absbaromin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("absbaromin"))));
+		$param .= '&baromin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("baromin"))));
+		$param .= '&rainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("rainin"))));
+		$param .= '&dailyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("dailyrainin"))));
+		$param .= '&weeklyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("weeklyrainin"))));
+		$param .= '&monthlyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("monthlyrainin"))));
+		$param .= '&solarradiation=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("solarradiation"))));
+		$param .= '&UV=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("UV"))));
+		$param .= '&softwaretype=EasyWeatherV1.2.1';
+		$param .= '&realtime=1';
+		$param .= '&rtfreq=5';
+		return $param;
 	}
 
 
@@ -469,6 +538,115 @@ class WeatherStation extends IPSModule
 				'name' => 'Wunderground_Station_Password',
 				'type' => 'ValidationTextBox',
 				'caption' => 'Station Password'
+			],
+			[
+				'type' => 'Label',
+				'label' => 'Weathercloud ID'
+			],
+			[
+				'name' => 'Weathercloud_ID',
+				'type' => 'ValidationTextBox',
+				'caption' => 'Weathercloud ID'
+			],
+			[
+				'type' => 'Label',
+				'label' => 'Weathercloud Key'
+			],
+			[
+				'name' => 'Weathercloud_Key',
+				'type' => 'ValidationTextBox',
+				'caption' => 'Weathercloud Key'
+			],
+			[
+				'type' => 'Label',
+				'label' => 'Update Interval Wunderground (seconds)'
+			],
+			[
+				'name' => 'UpdateInterval_Wunderground',
+				'type' => 'IntervalBox',
+				'caption' => 'Seconds'
+			],
+			[
+				'type' => 'Label',
+				'label' => 'Update Interval Weathercloud (minutes)'
+			],
+			[
+				'name' => 'UpdateInterval_Weathercloud',
+				'type' => 'IntervalBox',
+				'caption' => 'Minutes'
+			],
+			[
+				'type' => 'Label',
+				'label' => 'Update Interval Weatherbug (minutes)'
+			],
+			[
+				'name' => 'UpdateInterval_Weatherbug',
+				'type' => 'IntervalBox',
+				'caption' => 'Minutes'
+			],
+			[
+				'type' => 'Label',
+				'label' => 'Select units:'
+			],
+			[
+				'name' => 'temp_unit',
+				'type' => 'Select',
+				'caption' => 'Temperature',
+				'options' => [
+					[
+						'label' => 'Celius °C',
+						'value' => 1
+					],
+					[
+						'label' => 'Fahrenheit F',
+						'value' => 2
+					]
+				]
+			],
+			[
+				'name' => 'speed_unit',
+				'type' => 'Select',
+				'caption' => 'Wind Speed',
+				'options' => [
+					[
+						'label' => 'kmh',
+						'value' => 1
+					],
+					[
+						'label' => 'mph',
+						'value' => 2
+					]
+				]
+			],
+			[
+				'name' => 'pressure_unit',
+				'type' => 'Select',
+				'caption' => 'Temperature',
+				'options' => [
+					[
+						'label' => 'pascal',
+						'value' => 1
+					],
+					[
+						'label' => 'bar',
+						'value' => 2
+					]
+				]
+			],
+			[
+				'name' => 'rain_unit',
+				'type' => 'Select',
+				'caption' => 'Rain',
+				'options' => [
+					[
+						'label' => 'mm',
+						'value' => 1
+					],
+					[
+						'label' => 'inch',
+						'value' => 2
+					]
+				]
 			]
 		];
 		return $form;
