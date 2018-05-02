@@ -15,6 +15,8 @@ class WeatherStation extends IPSModule
 
 		$this->RequireParent("{8062CF2B-600E-41D6-AD4B-1BA66C32D6ED}");
 
+		$this->RegisterPropertyString('Wunderground_Station_ID', '');
+		$this->RegisterPropertyString('Wunderground_Station_Password', '');
 		$this->RegisterPropertyString("ApiKey", "");
 		$this->RegisterPropertyString("ApplicationKey", "ac14c2f0d58541d0a4714e51d97785e95728ce6ade5743dc8bec238fcc2c715b"); // API_Development_Key
 		$this->RegisterPropertyString("MAC", "");
@@ -279,6 +281,69 @@ class WeatherStation extends IPSModule
 		$this->SetValue("Frequence", $rtfreq);
 	}
 
+	public function Update_Wunderground()
+	{
+		$wunderground_url = 'https://weatherstation.wunderground.com/weatherstation/updateweatherstation.php';
+		$wunderground_station_id = $this->ReadPropertyString('Wunderground_Station_ID');
+		$wunderground_station_password = $this->ReadPropertyString('Wunderground_Station_Password');
+		// get data for wunderground
+
+		$param = '&dateutc=' . rawurlencode(date('Y-m-d G:i:s', time()));
+		$param .= '&indoortempf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Indoor_Temp"))));
+		$param .= '&tempf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Outdoor_Temp"))));
+		$param .= '&dewptf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Dewpoint"))));
+		$param .= '&windchillf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windchill"))));
+		$param .= '&indoorhumidity=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Indoor_Humidity"))));
+		$param .= '&humidity=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Outdoor_Humidity"))));
+		$param .= '&windspeedmph=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windspeed_km"))));
+		$param .= '&windgustmph=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windgust"))));
+		$param .= '&winddir=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Wind_Direction"))));
+		$param .= '&absbaromin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("absbaromin"))));
+		$param .= '&baromin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("baromin"))));
+		$param .= '&rainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("rainin"))));
+		$param .= '&dailyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("dailyrainin"))));
+		$param .= '&weeklyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("weeklyrainin"))));
+		$param .= '&monthlyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("monthlyrainin"))));
+		$param .= '&solarradiation=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("solarradiation"))));
+		$param .= '&UV=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("UV"))));
+		$param .= '&softwaretype=EasyWeatherV1.2.1';
+		$param .= '&realtime=1';
+		$param .= '&rtfreq=5';
+
+		$url = $wunderground_url . '?ID=' . $wunderground_station_id . '&PASSWORD=' . $wunderground_station_password . '&action=updateraw' . $param;
+		$this->SendDebug("Weatherstation:", 'http-get: url=' . $url, 0);
+		$time_start = microtime(true);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HEADER, false);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$wstatus = curl_exec($ch);
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		$duration = floor((microtime(true) - $time_start) * 100) / 100;
+		$this->SendDebug("Weatherstation:", ' => httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+		// $do_abort = false;
+		if ($httpcode != 200) {
+			$err = " => got http-code $httpcode from wunderground";
+			$this->SendDebug("Weatherstation:", $err, 0);
+			// $do_abort = true;
+		}
+		$wstatus = trim($wstatus, "\n");
+		if ($wstatus != 'success') {
+			$err = ' => got from wunderground: ' . $wstatus;
+			$this->SendDebug("Weatherstation:", $err, 0);
+			//$do_abort = true;
+		}
+		/*
+		if ($do_abort) {
+			$this->SetValue('Wunderground', false);
+			return -1;
+		}
+		$this->SetValue('Wunderground', true);
+		*/
+	}
+
+
 	/**
 	 * gets current IP-Symcon version
 	 * @return float|int
@@ -386,6 +451,24 @@ class WeatherStation extends IPSModule
 				'name' => 'MAC',
 				'type' => 'ValidationTextBox',
 				'caption' => 'MAC'
+			],
+			[
+				'type' => 'Label',
+				'label' => 'Wunderground Station ID'
+			],
+			[
+				'name' => 'Wunderground_Station_ID',
+				'type' => 'ValidationTextBox',
+				'caption' => 'Station ID'
+			],
+			[
+				'type' => 'Label',
+				'label' => 'Wunderground Station Password'
+			],
+			[
+				'name' => 'Wunderground_Station_Password',
+				'type' => 'ValidationTextBox',
+				'caption' => 'Station Password'
 			]
 		];
 		return $form;
