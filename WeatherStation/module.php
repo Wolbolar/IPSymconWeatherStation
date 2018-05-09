@@ -46,15 +46,12 @@ class WeatherStation extends IPSModule
 		$speed_unit = $this->ReadPropertyInteger("speed_unit");
 		$pressure_unit = $this->ReadPropertyInteger("pressure_unit");
 
-		if($temp_unit == 1)
-		{
+		if ($temp_unit == 1) {
 			$this->RegisterVariableFloat("Indoor_Temp", $this->Translate("Indoor Temperature"), "~Temperature", $this->_getPosition());
 			$this->RegisterVariableFloat("Outdoor_Temp", $this->Translate("Outdoor Temperature"), "~Temperature", $this->_getPosition());
 			$this->RegisterVariableFloat("Windchill", $this->Translate("Windchill"), "~Temperature", $this->_getPosition());
 			$this->RegisterVariableFloat("Dewpoint", $this->Translate("Dewpoint"), "~Temperature", $this->_getPosition());
-		}
-		else
-		{
+		} else {
 			$this->RegisterVariableFloat("Indoor_Temp", $this->Translate("Indoor Temperature"), "~Temperature.Fahrenheit", $this->_getPosition());
 			$this->RegisterVariableFloat("Outdoor_Temp", $this->Translate("Outdoor Temperature"), "~Temperature.Fahrenheit", $this->_getPosition());
 			$this->RegisterVariableFloat("Windchill", $this->Translate("Windchill"), "~Temperature.Fahrenheit", $this->_getPosition());
@@ -62,17 +59,13 @@ class WeatherStation extends IPSModule
 		}
 
 
-
 		$this->RegisterVariableFloat("Indoor_Humidity", $this->Translate("Indoor Humidity"), "~Humidity.F", $this->_getPosition());
 		$this->RegisterVariableFloat("Outdoor_Humidity", $this->Translate("Outdoor Humidity"), "~Humidity.F", $this->_getPosition());
-		if($speed_unit == 1)
-		{
+		if ($speed_unit == 1) {
 			$this->RegisterVariableFloat("Windspeed_km", $this->Translate("Windspeed"), "~WindSpeed.kmh", $this->_getPosition());
 			$this->RegisterVariableFloat("Windspeed_ms", $this->Translate("Windspeed"), "~WindSpeed.ms", $this->_getPosition());
 			$this->RegisterVariableFloat("Windgust", $this->Translate("Wind gust"), "~WindSpeed.ms", $this->_getPosition());
-		}
-		else
-		{
+		} else {
 			$this->RegisterVariableFloat("Windspeed_km", $this->Translate("Windspeed"), "~WindSpeed.kmh", $this->_getPosition());
 			$this->RegisterVariableFloat("Windspeed_ms", $this->Translate("Windspeed"), "~WindSpeed.ms", $this->_getPosition());
 			$this->RegisterVariableFloat("Windgust", $this->Translate("Windgust"), "~WindSpeed.ms", $this->_getPosition());
@@ -81,13 +74,10 @@ class WeatherStation extends IPSModule
 
 		$this->RegisterVariableInteger("Wind_Direction", $this->Translate("Wind Direction"), "~WindDirection", $this->_getPosition());
 
-		if($pressure_unit == 1)
-		{
+		if ($pressure_unit == 1) {
 			$this->RegisterVariableFloat("absbaromin", $this->Translate("Air Pressure absolut"), "~AirPressure.F", $this->_getPosition());
 			$this->RegisterVariableFloat("baromin", $this->Translate("Air Pressure"), "~AirPressure.F", $this->_getPosition());
-		}
-		else
-		{
+		} else {
 			$this->RegisterVariableFloat("absbaromin", $this->Translate("Air Pressure absolut"), "~AirPressure.F", $this->_getPosition());
 			$this->RegisterVariableFloat("baromin", $this->Translate("Air Pressure"), "~AirPressure.F", $this->_getPosition());
 		}
@@ -105,7 +95,6 @@ class WeatherStation extends IPSModule
 		$this->RegisterVariableInteger("Frequence", $this->Translate("Frequence"), "", $this->_getPosition());
 
 
-
 		$this->ValidateConfiguration();
 
 	}
@@ -118,11 +107,9 @@ class WeatherStation extends IPSModule
 	private function ValidateConfiguration()
 	{
 		$mac = $this->ReadPropertyString('MAC');
-		if($mac == "")
-		{
+		if ($mac == "") {
 			$this->SetStatus(201);
-		}
-		else{
+		} else {
 			// set interval
 			$this->SetUpdateIntervallWunderground();
 			$this->SetUpdateIntervallWeathercloud();
@@ -185,6 +172,12 @@ class WeatherStation extends IPSModule
 		return $kn;
 	}
 
+	protected function KilometerToKN(float $kmh)
+	{
+		$kn = $kmh / 1.852;
+		return $kn;
+	}
+
 	protected function MPHToMS(float $mph)
 	{
 		$ms = $mph * 0.44704;
@@ -203,22 +196,25 @@ class WeatherStation extends IPSModule
 		return $result;
 	}
 
-	public function ReceiveData($JSONString) {
+	public function ReceiveData($JSONString)
+	{
 
 		$this->SendDebug("Weatherstation:", $JSONString, 0);
 		$payload = json_decode($JSONString);
-		$type = $payload->Type;
-		if($type == 0)
+		if(isset($payload->Type))
 		{
-			$this->SendDebug("Weatherstation:", json_encode($payload->Buffer), 0);
-			$this->WriteData($payload->Buffer);
+			$type = $payload->Type;
+			if ($type == 0) {
+				$this->SendDebug("Weatherstation:", json_encode($payload->Buffer), 0);
+				$this->WriteData($payload->Buffer);
+			}
 		}
 	}
 
 	protected function WriteData($payloadraw)
 	{
-		$payload = substr($payloadraw,4,strlen($payloadraw)-4);
-		$url = "http://192.168.1.1/".$payload;
+		$payload = substr($payloadraw, 4, strlen($payloadraw) - 4);
+		$url = "http://192.168.1.1/" . $payload;
 		$this->SendDebug("Weatherstation:", $url, 0);
 		$query = parse_url($url, PHP_URL_QUERY);
 		parse_str($query, $data);
@@ -233,15 +229,12 @@ class WeatherStation extends IPSModule
 		$this->SendDebug("Weatherstation:", "dewpoint: " . $dewpoint, 0);
 		$windchill = $data["windchillf"];
 		$this->SendDebug("Weatherstation:", "windchill: " . $windchill, 0);
-		if($temp_unit == 1)
-		{
+		if ($temp_unit == 1) {
 			$this->SetValue("Indoor_Temp", $this->FahrenheitToCelsius($indoor_temperature));
 			$this->SetValue("Outdoor_Temp", $this->FahrenheitToCelsius($temperature));
-			$this->SetValue("Windchill", $this->FahrenheitToCelsius($dewpoint));
-			$this->SetValue("Dewpoint", $this->FahrenheitToCelsius($windchill));
-		}
-		else
-		{
+			$this->SetValue("Windchill", $this->FahrenheitToCelsius($windchill));
+			$this->SetValue("Dewpoint", $this->FahrenheitToCelsius($dewpoint));
+		} else {
 			$this->SetValue("Indoor_Temp", $indoor_temperature);
 			$this->SetValue("Outdoor_Temp", $temperature);
 			$this->SetValue("Windchill", $dewpoint);
@@ -257,14 +250,11 @@ class WeatherStation extends IPSModule
 		$this->SendDebug("Weatherstation:", "windspeed: " . $windspeed, 0);
 		$windgust = $data["windgustmph"];
 		$this->SendDebug("Weatherstation:", "windgust: " . $windgust, 0);
-		if($speed_unit == 1)
-		{
+		if ($speed_unit == 1) {
 			$this->SetValue("Windspeed_km", $this->MilesToKilometer($windgust));
 			$this->SetValue("Windspeed_ms", $this->MPHToMS($windspeed));
 			$this->SetValue("Windgust", $this->MilesToKilometer($windgust));
-		}
-		else
-		{
+		} else {
 			$this->SetValue("Windspeed_km", $windgust);
 			$this->SetValue("Windspeed_ms", $this->MPHToMS($windspeed));
 			$this->SetValue("Windgust", $windgust);
@@ -277,13 +267,10 @@ class WeatherStation extends IPSModule
 		$baromin = $data["baromin"];
 		$this->SendDebug("Weatherstation:", "abs barometer min: " . $baromin, 0);
 
-		if($pressure_unit == 1)
-		{
+		if ($pressure_unit == 1) {
 			$this->SetValue("absbaromin", $this->Pressure($absbaromin));
 			$this->SetValue("baromin", $this->Pressure($baromin));
-		}
-		else
-		{
+		} else {
 			$this->SetValue("absbaromin", $absbaromin);
 			$this->SetValue("baromin", $baromin);
 		}
@@ -330,7 +317,7 @@ class WeatherStation extends IPSModule
 		$wunderground_station_password = $this->ReadPropertyString('Wunderground_Station_Password');
 		// get data for wunderground
 
-		$param = $this->GetParameters();
+		$param = $this->GetParametersWunderground();
 
 		$url = $wunderground_url . '?ID=' . $wunderground_station_id . '&PASSWORD=' . $wunderground_station_password . '&action=updateraw' . $param;
 		$this->SendDebug("Weatherstation:", 'http-get: url=' . $url, 0);
@@ -365,28 +352,7 @@ class WeatherStation extends IPSModule
 		*/
 	}
 
-	public function Update_Weathercloud()
-	{
-		$weathercloud_url = 'http://api.weathercloud.net/v01/set?';
-		$param = $this->GetParameters();
-		$url = $weathercloud_url . $param;
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_HEADER, false);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_exec($ch);
-		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		curl_close($ch);
-		if ($httpcode != 200) {
-			$err = " => got http-code $httpcode from weathercloud";
-			$this->SendDebug("Weatherstation:", $err, 0);
-		}
-	}
-
-	public function Update_Weatherbug()
-	{}
-
-	protected function GetParameters()
+	protected function GetParametersWunderground()
 	{
 		$param = '&dateutc=' . rawurlencode(date('Y-m-d G:i:s', time()));
 		$param .= '&indoortempf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Indoor_Temp"))));
@@ -412,6 +378,84 @@ class WeatherStation extends IPSModule
 		return $param;
 	}
 
+	public function Update_Weathercloud()
+	{
+		$weathercloud_url = 'http://api.weathercloud.net/v01/set';
+
+		$weathercloud_station_id = $this->ReadPropertyString('Weathercloud_ID');
+		$weathercloud_station_password = $this->ReadPropertyString('Weathercloud_Key');
+
+		$url = $weathercloud_url . '?wid=' . $weathercloud_station_id . '&key=' . $weathercloud_station_password;
+
+		$param = $this->GetParametersWeathercloud();
+		$url = $url . $param;
+		$this->SendDebug("Weatherstation:", $url, 0);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HEADER, false);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_exec($ch);
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		if ($httpcode != 200) {
+			$err = " => got http-code $httpcode from weathercloud";
+			$this->SendDebug("Weatherstation:", $err, 0);
+		}
+	}
+
+	protected function GetParametersWeathercloud()
+	{
+		// Gesendet wird noch von Station  "rainrate" und "heat" ??
+
+		$param = '&date=' . date('Ymd', time() - date('Z'));
+		$param .= '&time=' . date('Hi', time() - date('Z'));
+		$param .= '&tempin=' . intval(GetValue($this->GetIDForIdent("Indoor_Temp")) * 10);
+		$param .= '&temp=' . intval(GetValue($this->GetIDForIdent("Outdoor_Temp")) * 10);
+		$param .= '&dew=' . intval(GetValue($this->GetIDForIdent("Dewpoint")) * 10);
+		$param .= '&chill=' . intval(GetValue($this->GetIDForIdent("Windchill")) * 10);
+		$param .= '&humin=' . intval(GetValue($this->GetIDForIdent("Indoor_Humidity")));
+		$param .= '&hum=' . intval(GetValue($this->GetIDForIdent("Outdoor_Humidity")));
+		$param .= '&wspd=' . intval($this->KilometerToKN(GetValue($this->GetIDForIdent("Windspeed_km"))) * 10);
+		$param .= '&wspdhi=' . intval($this->KilometerToKN(GetValue($this->GetIDForIdent("Windgust"))) * 10);
+		$param .= '&wspdavg=' . intval($this->KilometerToKN(GetValue($this->GetIDForIdent("Windgust"))) * 10);
+		$param .= '&wdir=' . intval(GetValue($this->GetIDForIdent("Wind_Direction")));
+		$param .= '&bar=' . intval(GetValue($this->GetIDForIdent("baromin")) * 10);
+		$param .= '&rain=' . intval(GetValue($this->GetIDForIdent("rainin")));
+		$param .= '&solarrad=' . intval(GetValue($this->GetIDForIdent("solarradiation")) * 10);
+		$param .= '&uvi=' . intval(GetValue($this->GetIDForIdent("UV")));
+		$param .= '&type=EasyWeather';
+		$param .= '&ver=1.2.1';
+
+		return $param;
+	}
+
+	public function Update_Weatherbug()
+	{
+	}
+
+	public function AlexaData()
+	{
+		$data = [];
+		$data["Indoor_Temp"] = GetValue($this->GetIDForIdent("Indoor_Temp"));
+		$data["Outdoor_Temp"] = GetValue($this->GetIDForIdent("Outdoor_Temp"));
+		$data["Dewpoint"] = GetValue($this->GetIDForIdent("Dewpoint"));
+		$data["Windchill"] = GetValue($this->GetIDForIdent("Windchill"));
+		$data["Indoor_Humidity"] = GetValue($this->GetIDForIdent("Indoor_Humidity"));
+		$data["Outdoor_Humidity"] = GetValue($this->GetIDForIdent("Outdoor_Humidity"));
+		$data["Windspeed_km"] = GetValue($this->GetIDForIdent("Windspeed_km"));
+		$data["Windgust"] = GetValue($this->GetIDForIdent("Windgust"));
+		$data["Wind_Direction"] = GetValue($this->GetIDForIdent("Wind_Direction"));
+		$data["absbaromin"] = GetValue($this->GetIDForIdent("absbaromin"));
+		$data["baromin"] = GetValue($this->GetIDForIdent("baromin"));
+		$data["rainin"] = GetValue($this->GetIDForIdent("rainin"));
+		$data["dailyrainin"] = GetValue($this->GetIDForIdent("dailyrainin"));
+		$data["weeklyrainin"] = GetValue($this->GetIDForIdent("weeklyrainin"));
+		$data["monthlyrainin"] = GetValue($this->GetIDForIdent("monthlyrainin"));
+		$data["solarradiation"] = GetValue($this->GetIDForIdent("solarradiation"));
+		$data["UV"] = GetValue($this->GetIDForIdent("UV"));
+
+		return $data;
+	}
 
 	/**
 	 * gets current IP-Symcon version
