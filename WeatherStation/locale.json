@@ -1,6 +1,8 @@
 {
   "translations": {
     "de": {
+      "Data for Ambient Weather": "Daten für Ambient Weather",
+      "Ambient Weather Passkey": "Ambient Weather Passkey",
       "Indoor Temperature": "Innentemperatur",
       "Outdoor Temperature": "Außentemperatur",
       "Dewpoint": "Taupunkt",
@@ -36,6 +38,7 @@
       "Update Interval Weathercloud (minutes)": "Aktualisierungsintervall Weathercloud (Minuten)",
       "Minutes": "Minuten",
       "Update Interval Weatherbug (minutes)": "Aktualisierungsintervall Weatherbug (Minuten)",
+      "Update Interval Ambient Weather (seconds)": "Aktualisierungsintervall Ambient Weather (Sekunden)",
       "Select units:": "Einheiten auswählen",
       "Temperature": "Temperatur",
       "Wind Speed": "Windgeschwingigkeit",

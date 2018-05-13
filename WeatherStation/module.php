@@ -22,6 +22,7 @@ class WeatherStation extends IPSModule
 		$this->RegisterPropertyString("ApiKey", "");
 		$this->RegisterPropertyString("ApplicationKey", "ac14c2f0d58541d0a4714e51d97785e95728ce6ade5743dc8bec238fcc2c715b"); // API_Development_Key
 		$this->RegisterPropertyString("MAC", "");
+		$this->RegisterPropertyString("Ambient_Passkey", "");
 		$this->RegisterPropertyInteger('temp_unit', 1);
 		$this->RegisterPropertyInteger('speed_unit', 1);
 		$this->RegisterPropertyInteger('pressure_unit', 1);
@@ -35,6 +36,9 @@ class WeatherStation extends IPSModule
 
 		$this->RegisterPropertyInteger('UpdateInterval_Weatherbug', 10);
 		$this->RegisterTimer('WeatherbugTimerUpdate', 0, 'WeatherStation_Update_Weatherbug(' . $this->InstanceID . ');');
+
+		$this->RegisterPropertyInteger('UpdateInterval_AmbientWeather', 10);
+		$this->RegisterTimer('AmbientWeatherTimerUpdate', 0, 'WeatherStation_Update_AmbientWeatherCloud(' . $this->InstanceID . ');');
 	}
 
 	public function ApplyChanges()
@@ -114,6 +118,7 @@ class WeatherStation extends IPSModule
 			$this->SetUpdateIntervallWunderground();
 			$this->SetUpdateIntervallWeathercloud();
 			$this->SetUpdateIntervallWeatherbug();
+			$this->SetUpdateIntervallAmbientWeather();
 			$this->SetStatus(102);
 		}
 	}
@@ -143,6 +148,15 @@ class WeatherStation extends IPSModule
 	{
 		$interval = $this->ReadPropertyInteger('UpdateInterval_Weatherbug') * 1000 * 60;
 		$this->SetTimerInterval('WeatherbugTimerUpdate', $interval);
+	}
+
+	/**
+	 * set / unset update interval
+	 */
+	protected function SetUpdateIntervallAmbientWeather()
+	{
+		$interval = $this->ReadPropertyInteger('UpdateInterval_AmbientWeather') * 1000;
+		$this->SetTimerInterval('AmbientWeatherTimerUpdate', $interval);
 	}
 
 	public function GetData()
@@ -182,6 +196,12 @@ class WeatherStation extends IPSModule
 	{
 		$ms = $mph * 0.44704;
 		return $ms;
+	}
+
+	protected function MSToMPH(float $ms)
+	{
+		$mph = $ms * 2.23694;
+		return $mph;
 	}
 
 	protected function Pressure(float $pressure)
@@ -361,17 +381,17 @@ class WeatherStation extends IPSModule
 		$param .= '&windchillf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windchill"))));
 		$param .= '&indoorhumidity=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Indoor_Humidity"))));
 		$param .= '&humidity=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Outdoor_Humidity"))));
-		$param .= '&windspeedmph=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windspeed_km"))));
-		$param .= '&windgustmph=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windgust"))));
-		$param .= '&winddir=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Wind_Direction"))));
-		$param .= '&absbaromin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("absbaromin"))));
-		$param .= '&baromin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("baromin"))));
-		$param .= '&rainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("rainin"))));
-		$param .= '&dailyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("dailyrainin"))));
-		$param .= '&weeklyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("weeklyrainin"))));
-		$param .= '&monthlyrainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("monthlyrainin"))));
-		$param .= '&solarradiation=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("solarradiation"))));
-		$param .= '&UV=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("UV"))));
+		$param .= '&windspeedmph=' . rawurlencode($this->MSToMPH(GetValue($this->GetIDForIdent("Windspeed_ms"))));
+		$param .= '&windgustmph=' . rawurlencode($this->MSToMPH(GetValue($this->GetIDForIdent("Windgust"))));
+		$param .= '&winddir=' . rawurlencode(GetValue($this->GetIDForIdent("Wind_Direction")));
+		$param .= '&absbaromin=' . rawurlencode(GetValue($this->GetIDForIdent("absbaromin")));
+		$param .= '&baromin=' . rawurlencode(GetValue($this->GetIDForIdent("baromin")));
+		$param .= '&rainin=' . rawurlencode(GetValue($this->GetIDForIdent("rainin")));
+		$param .= '&dailyrainin=' . rawurlencode(GetValue($this->GetIDForIdent("dailyrainin")));
+		$param .= '&weeklyrainin=' . rawurlencode(GetValue($this->GetIDForIdent("weeklyrainin")));
+		$param .= '&monthlyrainin=' . rawurlencode(GetValue($this->GetIDForIdent("monthlyrainin")));
+		$param .= '&solarradiation=' . rawurlencode(GetValue($this->GetIDForIdent("solarradiation")));
+		$param .= '&UV=' . rawurlencode(GetValue($this->GetIDForIdent("UV")));
 		$param .= '&softwaretype=EasyWeatherV1.2.1';
 		$param .= '&realtime=1';
 		$param .= '&rtfreq=5';
@@ -415,7 +435,7 @@ class WeatherStation extends IPSModule
 		$param .= '&chill=' . intval(GetValue($this->GetIDForIdent("Windchill")) * 10);
 		$param .= '&humin=' . intval(GetValue($this->GetIDForIdent("Indoor_Humidity")));
 		$param .= '&hum=' . intval(GetValue($this->GetIDForIdent("Outdoor_Humidity")));
-		$param .= '&wspd=' . intval($this->KilometerToKN(GetValue($this->GetIDForIdent("Windspeed_km"))) * 10);
+		$param .= '&wspd=' . intval($this->KilometerToKN(GetValue($this->GetIDForIdent("Windspeed_ms"))) * 10);
 		$param .= '&wspdhi=' . intval($this->KilometerToKN(GetValue($this->GetIDForIdent("Windgust"))) * 10);
 		$param .= '&wspdavg=' . intval($this->KilometerToKN(GetValue($this->GetIDForIdent("Windgust"))) * 10);
 		$param .= '&wdir=' . intval(GetValue($this->GetIDForIdent("Wind_Direction")));
@@ -426,6 +446,65 @@ class WeatherStation extends IPSModule
 		$param .= '&type=EasyWeather';
 		$param .= '&ver=1.2.1';
 
+		return $param;
+	}
+
+	public function Update_AmbientWeatherCloud()
+	{
+		$ambient_weather_cloud_url = 'https://api.ambientweather.net:80/endpoint?';
+		$passkey = $this->ReadPropertyString("Ambient_Passkey");
+
+		$param = $this->GetParametersAmbientWeatherCloud();
+		$url = $ambient_weather_cloud_url . '?PASSKEY=' . $passkey .  '&stationtype=WS-1600-IP' . $param;
+		$this->SendDebug("Weatherstation:", 'http-get: url=' . $url, 0);
+		$time_start = microtime(true);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HEADER, false);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$wstatus = curl_exec($ch);
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		$duration = floor((microtime(true) - $time_start) * 100) / 100;
+		$this->SendDebug("Weatherstation:", ' => httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+		if ($httpcode != 200) {
+			$err = " => got http-code $httpcode from ambient weather";
+			$this->SendDebug("Weatherstation:", $err, 0);
+		}
+		$wstatus = trim($wstatus, "\n");
+		if ($wstatus != 'success') {
+			$err = ' => got from ambient weather: ' . $wstatus;
+			$this->SendDebug("Weatherstation:", $err, 0);
+		}
+	}
+
+	protected function GetParametersAmbientWeatherCloud()
+	{
+		$param = '&stationtype=WS-1600-IP';
+		$param .= '&dateutc=' . rawurlencode(date('Y-m-d+G:i:s', time()));
+		$param .= '&winddir=' . rawurlencode(GetValue($this->GetIDForIdent("Wind_Direction")));
+		$param .= '&windspeedmph=' . rawurlencode($this->FormatFloat($this->MSToMPH(GetValue($this->GetIDForIdent("Windspeed_ms")))));
+		$param .= '&windgustmph=' . rawurlencode($this->FormatFloat($this->MSToMPH(GetValue($this->GetIDForIdent("Windgust")))));
+		// &maxdailygust=4.47
+		$param .= '&tempf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Outdoor_Temp"))));
+		$param .= '&humidity=' . rawurlencode(GetValue($this->GetIDForIdent("Outdoor_Humidity")));
+		// &hourlyrainin=0.00
+		$param .= '&dailyrainin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent("dailyrainin"))));
+		$param .= '&weeklyrainin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent("weeklyrainin"))));
+		$param .= '&monthlyrainin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent("monthlyrainin"))));
+		// &yearlyrainin=0.00
+		// &totalrainin=0.00
+		$param .= '&tempinf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Indoor_Temp"))));
+		$param .= '&humidityin=' . rawurlencode(intval(GetValue($this->GetIDForIdent("Indoor_Humidity"))));
+		$param .= '&baromrelin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent("baromin"))));
+		$param .= '&baromabsin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent("absbaromin"))));
+		$param .= '&uv=' . rawurlencode(GetValue($this->GetIDForIdent("UV")));
+		$param .= '&solarradiation=' . rawurlencode(GetValue($this->GetIDForIdent("solarradiation")));
+		/*
+		$param .= '&dewptf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Dewpoint"))));
+		$param .= '&windchillf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windchill"))));
+		$param .= '&rainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("rainin"))));
+		*/
 		return $param;
 	}
 
@@ -521,6 +600,12 @@ class WeatherStation extends IPSModule
 
 	}
 
+	protected function FormatFloat($value)
+	{
+		$formatted_value = str_replace(",", ".", $value);
+		return $formatted_value;
+	}
+
 	/**
 	 * return incremented position
 	 * @return int
@@ -558,12 +643,25 @@ class WeatherStation extends IPSModule
 		$form = [
 			[
 				'type' => 'Label',
+				'label' => 'Data for Ambient Weather'
+			],
+			[
+				'type' => 'Label',
 				'label' => 'MAC adress'
 			],
 			[
 				'name' => 'MAC',
 				'type' => 'ValidationTextBox',
 				'caption' => 'MAC'
+			],
+			[
+				'type' => 'Label',
+				'label' => 'Ambient Weather Passkey'
+			],
+			[
+				'name' => 'Ambient_Passkey',
+				'type' => 'ValidationTextBox',
+				'caption' => 'Passkey'
 			],
 			[
 				'type' => 'Label',
@@ -630,6 +728,15 @@ class WeatherStation extends IPSModule
 			],
 			[
 				'type' => 'Label',
+				'label' => 'Update Interval Ambient Weather (seconds)'
+			],
+			[
+				'name' => 'UpdateInterval_AmbientWeather',
+				'type' => 'IntervalBox',
+				'caption' => 'Seconds'
+			],
+			[
+				'type' => 'Label',
 				'label' => 'Select units:'
 			],
 			[
@@ -665,7 +772,7 @@ class WeatherStation extends IPSModule
 			[
 				'name' => 'pressure_unit',
 				'type' => 'Select',
-				'caption' => 'Temperature',
+				'caption' => 'Air Pressure',
 				'options' => [
 					[
 						'label' => 'pascal',
