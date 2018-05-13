@@ -124,6 +124,7 @@ class WeatherStation extends IPSModule
 	}
 
 	/**
+	 * Update Interval Wunderground
 	 * set / unset update interval
 	 */
 	protected function SetUpdateIntervallWunderground()
@@ -133,6 +134,7 @@ class WeatherStation extends IPSModule
 	}
 
 	/**
+	 * Update Interval Weathercloud
 	 * set / unset update interval
 	 */
 	protected function SetUpdateIntervallWeathercloud()
@@ -142,6 +144,7 @@ class WeatherStation extends IPSModule
 	}
 
 	/**
+	 * Update Interval Weatherbug
 	 * set / unset update interval
 	 */
 	protected function SetUpdateIntervallWeatherbug()
@@ -151,6 +154,7 @@ class WeatherStation extends IPSModule
 	}
 
 	/**
+	 * Update Interval Ambient Weather
 	 * set / unset update interval
 	 */
 	protected function SetUpdateIntervallAmbientWeather()
