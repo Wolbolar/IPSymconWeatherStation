@@ -238,6 +238,10 @@ class WeatherStation extends IPSModule
 				$this->WriteData($payload->Buffer);
 			}
 		}
+		else{
+			$this->SendDebug("Weatherstation:", json_encode($payload->Buffer), 0);
+			$this->WriteData($payload->Buffer);
+		}
 	}
 
 	protected function WriteData($payloadraw)
