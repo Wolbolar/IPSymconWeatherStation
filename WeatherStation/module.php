@@ -213,6 +213,12 @@ class WeatherStation extends IPSModule
 		$pascal = $pressure / 0.02952998751;
 		return $pascal;
 	}
+	
+	protected function Rain(float $inch)
+	{
+		$mm = $inch * 25.4;
+		return $mm;
+	}
 
 	protected function PressurehPaToBar($pressure)
 	{
@@ -247,7 +253,7 @@ class WeatherStation extends IPSModule
 	protected function WriteData($payloadraw)
 	{
 		$payload = substr($payloadraw, 4, strlen($payloadraw) - 4);
-		$url = "http://192.168.1.1/" . $payload;
+		$url = "http://192.168.1.1/1.php?" . $payload;
 		$this->SendDebug("Weatherstation:", $url, 0);
 		$query = parse_url($url, PHP_URL_QUERY);
 		parse_str($query, $data);
@@ -284,11 +290,11 @@ class WeatherStation extends IPSModule
 		$windgust = $data["windgustmph"];
 		$this->SendDebug("Weatherstation:", "windgust: " . $windgust, 0);
 		if ($speed_unit == 1) {
-			$this->SetValue("Windspeed_km", $this->MilesToKilometer($windgust));
+			$this->SetValue("Windspeed_km", $this->MilesToKilometer($windspeed));
 			$this->SetValue("Windspeed_ms", $this->MPHToMS($windspeed));
 			$this->SetValue("Windgust", $this->MilesToKilometer($windgust));
 		} else {
-			$this->SetValue("Windspeed_km", $windgust);
+			$this->SetValue("Windspeed_km", $windspeed);
 			$this->SetValue("Windspeed_ms", $this->MPHToMS($windspeed));
 			$this->SetValue("Windgust", $windgust);
 		}
@@ -330,10 +336,10 @@ class WeatherStation extends IPSModule
 		$rtfreq = $data["rtfreq"];
 		$this->SendDebug("Weatherstation:", "rt freq: " . $rtfreq, 0);
 
-		$this->SetValue("rainin", $rainin);
-		$this->SetValue("dailyrainin", $dailyrainin);
-		$this->SetValue("weeklyrainin", $weeklyrainin);
-		$this->SetValue("monthlyrainin", $monthlyrainin);
+		$this->SetValue("rainin", $this->Rain($rainin));
+		$this->SetValue("dailyrainin", $this->Rain($dailyrainin));
+		$this->SetValue("weeklyrainin", $this->Rain($weeklyrainin));
+		$this->SetValue("monthlyrainin", $this->Rain($monthlyrainin));
 		$this->SetValue("solarradiation", $solarradiation);
 		$this->SetValue("UV", $uv);
 		$this->SetValue("Date", $dateutc);
