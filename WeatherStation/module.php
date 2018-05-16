@@ -208,21 +208,21 @@ class WeatherStation extends IPSModule
 		return $mph;
 	}
 
-	protected function Pressure(float $pressure)
-	{
-		$pascal = $pressure / 0.02952998751;
-		return $pascal;
-	}
-	
 	protected function Rain(float $inch)
 	{
 		$mm = $inch * 25.4;
 		return $mm;
 	}
 
+	protected function Pressure(float $pressure)
+	{
+		$pascal = $pressure / 0.02952998751;
+		return $pascal;
+	}
+
 	protected function PressurehPaToBar($pressure)
 	{
-		$bar = $pressure / 100000; // 1 bar = 100000 Pascal
+		$bar = $pressure * 0.02952998751;
 		return $bar;
 	}
 
@@ -253,7 +253,7 @@ class WeatherStation extends IPSModule
 	protected function WriteData($payloadraw)
 	{
 		$payload = substr($payloadraw, 4, strlen($payloadraw) - 4);
-		$url = "http://192.168.1.1/1.php?" . $payload;
+		$url = "http://192.168.1.1/" . $payload;
 		$this->SendDebug("Weatherstation:", $url, 0);
 		$query = parse_url($url, PHP_URL_QUERY);
 		parse_str($query, $data);
