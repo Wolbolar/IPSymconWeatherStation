@@ -214,6 +214,12 @@ class WeatherStation extends IPSModule
 		return $mm;
 	}
 
+	protected function RainToInch(float $mm)
+	{
+		$inch = $mm * 0.03937007874;
+		return $inch;
+	}
+
 	protected function Pressure(float $pressure)
 	{
 		$pascal = $pressure / 0.02952998751;
@@ -406,10 +412,10 @@ class WeatherStation extends IPSModule
 		$param .= '&winddir=' . str_replace(",", ".", GetValue($this->GetIDForIdent("Wind_Direction")));
 		$param .= '&absbaromin=' . str_replace(",", ".", $this->PressurehPaToBar(GetValue($this->GetIDForIdent("absbaromin"))));
 		$param .= '&baromin=' . str_replace(",", ".", $this->PressurehPaToBar(GetValue($this->GetIDForIdent("baromin"))));
-		$param .= '&rainin=' . str_replace(",", ".", GetValue($this->GetIDForIdent("rainin")));
-		$param .= '&dailyrainin=' . str_replace(",", ".", GetValue($this->GetIDForIdent("dailyrainin")));
-		$param .= '&weeklyrainin=' . str_replace(",", ".", GetValue($this->GetIDForIdent("weeklyrainin")));
-		$param .= '&monthlyrainin=' . str_replace(",", ".", GetValue($this->GetIDForIdent("monthlyrainin")));
+		$param .= '&rainin=' . str_replace(",", ".", $this->RainToInch(GetValue($this->GetIDForIdent("rainin"))));
+		$param .= '&dailyrainin=' . str_replace(",", ".", $this->RainToInch(GetValue($this->GetIDForIdent("dailyrainin"))));
+		$param .= '&weeklyrainin=' . str_replace(",", ".", $this->RainToInch(GetValue($this->GetIDForIdent("weeklyrainin"))));
+		$param .= '&monthlyrainin=' . str_replace(",", ".", $this->RainToInch(GetValue($this->GetIDForIdent("monthlyrainin"))));
 		$param .= '&solarradiation=' . str_replace(",", ".", GetValue($this->GetIDForIdent("solarradiation")));
 		$param .= '&UV=' . str_replace(",", ".", GetValue($this->GetIDForIdent("UV")));
 		$param .= '&softwaretype=EasyWeatherV1.2.1';
