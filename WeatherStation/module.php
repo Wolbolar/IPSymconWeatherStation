@@ -280,17 +280,17 @@ class WeatherStation extends IPSModule
 			$this->SetValue("Windchill", $this->FahrenheitToCelsius($windchill));
 			$this->SetValue("Dewpoint", $this->FahrenheitToCelsius($dewpoint));
 		} else {
-			$this->SetValue("Indoor_Temp", $indoor_temperature);
-			$this->SetValue("Outdoor_Temp", $temperature);
-			$this->SetValue("Windchill", $dewpoint);
-			$this->SetValue("Dewpoint", $windchill);
+			$this->SetValue("Indoor_Temp", floatval($indoor_temperature));
+			$this->SetValue("Outdoor_Temp", floatval($temperature));
+			$this->SetValue("Windchill", floatval($dewpoint));
+			$this->SetValue("Dewpoint", floatval($windchill));
 		}
 		$indoorhumidity = $data["indoorhumidity"];
 		$this->SendDebug("Weatherstation:", "indoor humidity: " . $indoorhumidity, 0);
 		$humidity = $data["humidity"];
 		$this->SendDebug("Weatherstation:", "windchill: " . $humidity, 0);
-		$this->SetValue("Indoor_Humidity", $indoorhumidity);
-		$this->SetValue("Outdoor_Humidity", $humidity);
+		$this->SetValue("Indoor_Humidity", floatval($indoorhumidity));
+		$this->SetValue("Outdoor_Humidity", floatval($humidity));
 		$windspeed = $data["windspeedmph"];
 		$this->SendDebug("Weatherstation:", "windspeed: " . $windspeed, 0);
 		$windgust = $data["windgustmph"];
@@ -300,13 +300,13 @@ class WeatherStation extends IPSModule
 			$this->SetValue("Windspeed_ms", $this->MPHToMS($windspeed));
 			$this->SetValue("Windgust", $this->MilesToKilometer($windgust));
 		} else {
-			$this->SetValue("Windspeed_km", $windspeed);
+			$this->SetValue("Windspeed_km", floatval($windspeed));
 			$this->SetValue("Windspeed_ms", $this->MPHToMS($windspeed));
-			$this->SetValue("Windgust", $windgust);
+			$this->SetValue("Windgust", floatval($windgust));
 		}
 		$winddir = $data["winddir"];
 		$this->SendDebug("Weatherstation:", "wind direction: " . $winddir, 0);
-		$this->SetValue("Wind_Direction", $winddir);
+		$this->SetValue("Wind_Direction", intval($winddir));
 		$absbaromin = $data["absbaromin"];
 		$this->SendDebug("Weatherstation:", "barometer min: " . $absbaromin, 0);
 		$baromin = $data["baromin"];
@@ -316,8 +316,8 @@ class WeatherStation extends IPSModule
 			$this->SetValue("absbaromin", $this->Pressure($absbaromin));
 			$this->SetValue("baromin", $this->Pressure($baromin));
 		} else {
-			$this->SetValue("absbaromin", $absbaromin);
-			$this->SetValue("baromin", $baromin);
+			$this->SetValue("absbaromin", floatval($absbaromin));
+			$this->SetValue("baromin", floatval($baromin));
 		}
 		$rainin = $data["rainin"];
 		$this->SendDebug("Weatherstation:", "rain: " . $rainin, 0);
@@ -346,13 +346,13 @@ class WeatherStation extends IPSModule
 		$this->SetValue("dailyrainin", $this->Rain($dailyrainin));
 		$this->SetValue("weeklyrainin", $this->Rain($weeklyrainin));
 		$this->SetValue("monthlyrainin", $this->Rain($monthlyrainin));
-		$this->SetValue("solarradiation", $solarradiation);
-		$this->SetValue("UV", $uv);
+		$this->SetValue("solarradiation", floatval($solarradiation));
+		$this->SetValue("UV", intval($uv));
 		$this->SetValue("Date", $dateutc);
 		$this->SetValue("Software_Type", $softwaretype);
 		$this->SetValue("Action", $action);
-		$this->SetValue("Realtime", $realtime);
-		$this->SetValue("Frequence", $rtfreq);
+		$this->SetValue("Realtime", intval($realtime));
+		$this->SetValue("Frequence", intval($rtfreq));
 	}
 
 	public function Update_Wunderground()
