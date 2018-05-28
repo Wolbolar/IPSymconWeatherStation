@@ -1,6 +1,8 @@
 {
   "translations": {
     "de": {
+      "Altitude above sea level for the location of the weatherstation": "Höhe über dem Meeresspiegel des Standorts der Wetterstation",
+      "altitude (m)": "Höhe (m)",
       "Data for Ambient Weather": "Daten für Ambient Weather",
       "Ambient Weather Passkey": "Ambient Weather Passkey",
       "Indoor Temperature": "Innentemperatur",

@@ -27,6 +27,7 @@ class WeatherStation extends IPSModule
 		$this->RegisterPropertyInteger('speed_unit', 1);
 		$this->RegisterPropertyInteger('pressure_unit', 1);
 		$this->RegisterPropertyInteger('rain_unit', 1);
+		$this->RegisterPropertyInteger('altitude_above_sea_level', 0);
 
 		$this->RegisterPropertyInteger('UpdateInterval_Wunderground', 20);
 		$this->RegisterTimer('WundergroundTimerUpdate', 0, 'WeatherStation_Update_Wunderground(' . $this->InstanceID . ');');
@@ -220,10 +221,33 @@ class WeatherStation extends IPSModule
 		return $inch;
 	}
 
-	protected function Pressure(float $pressure)
+	protected function Pressure_absolute(float $pressure)
 	{
 		$pascal = $pressure / 0.02952998751;
 		return $pascal;
+	}
+
+	protected function Pressure(float $pressure, float $temperature)
+	{
+		$pascal = $pressure / 0.02952998751;
+		$altitude = $this->ReadPropertyInteger("altitude_above_sea_level");
+
+		$g0 = 9.80665;                                         // Normwert der Fallbeschleunigung
+		$R  = 287.05;                                          // Gaskonstante trockener Luft
+		$T  = 273.15;                                          // 0°C in Kelvin
+		$Ch = 0.12;                                            // Beiwert zu E
+		if ($temperature < 9.1)
+		{
+			$E = 5.6402*(-0.0916 + exp(0.06*$temperature));        // Dampfdruck des Wasserdampfanteils bei t < 9.1°C
+		}
+		else
+		{
+			$E  = 18.2194*(1.0463 - exp(-0.0666*$temperature));    // Dampfdruck des Wasserdampfanteils bei t >= 9.1°C
+		}
+		$a  = 0.0065;                                          // vertikaler Temperaturgradient
+		$xp = $altitude*$g0/($R*($T+$temperature + $Ch*$E + $a*$altitude/2)); // Exponent für Formel
+		$p0 = $pascal*exp($xp);                             // Formel für den NN-bezogenen Luftdruck laut Wikipedia
+		return $p0;
 	}
 
 	protected function PressurehPaToBar($pressure)
@@ -313,8 +337,8 @@ class WeatherStation extends IPSModule
 		$this->SendDebug("Weatherstation:", "abs barometer min: " . $baromin, 0);
 
 		if ($pressure_unit == 1) {
-			$this->SetValue("absbaromin", $this->Pressure($absbaromin));
-			$this->SetValue("baromin", $this->Pressure($baromin));
+			$this->SetValue("absbaromin", $this->Pressure_absolute($absbaromin));
+			$this->SetValue("baromin", $this->Pressure($baromin, $this->FahrenheitToCelsius($temperature)));
 		} else {
 			$this->SetValue("absbaromin", floatval($absbaromin));
 			$this->SetValue("baromin", floatval($baromin));
@@ -666,7 +690,25 @@ class WeatherStation extends IPSModule
 	 */
 	protected function FormHead()
 	{
+		// $altidude = $this->altitude_above_sea_level();
 		$form = [
+
+
+			[
+				'type' => 'Label',
+				'label' => 'Altitude above sea level for the location of the weatherstation'
+			],
+			/*
+			[
+				'type' => 'Label',
+				'label' => 'Altitude from the weather stationabove '.$altidude.' m'
+			],
+			*/
+			[
+				'name' => 'altitude_above_sea_level',
+				'type' => 'NumberSpinner',
+				'caption' => 'altitude (m)'
+			],
 			[
 				'type' => 'Label',
 				'label' => 'Data for Ambient Weather'
@@ -884,6 +926,32 @@ class WeatherStation extends IPSModule
 		];
 
 		return $form;
+	}
+
+	protected function altitude_above_sea_level()
+	{
+		$location = $this->getlocation();
+		$Latitude = $location["Latitude"];
+		$Longitude = $location["Longitude"];
+		$altitude = $Latitude*$Longitude;
+		return $altitude;
+	}
+
+	protected function getlocation()
+	{
+		//Location auslesen
+		$LocationID = IPS_GetInstanceListByModuleID("{45E97A63-F870-408A-B259-2933F7EABF74}")[0];
+		$ipsversion = $this->GetIPSVersion();
+		if ($ipsversion == 5) {
+			$Location = json_decode(IPS_GetProperty($LocationID, "Location"));
+			$Latitude = $Location->latitude;
+			$Longitude = $Location->longitude;
+		} else {
+			$Latitude = IPS_GetProperty($LocationID, "Latitude");
+			$Longitude = IPS_GetProperty($LocationID, "Longitude");
+		}
+		$location = array("Latitude" => $Latitude, "Longitude" => $Longitude);
+		return $location;
 	}
 
 	//Add this Polyfill for IP-Symcon 4.4 and older
