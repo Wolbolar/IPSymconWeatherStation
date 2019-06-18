@@ -138,9 +138,9 @@ Im Konfigurationsformular ist die MAC Adresse der Wetterstation zu ergänzen.
 
 #### Wetter Station:
 
-`WeatherStation_GetData(integer $InstanceID)`
+`WeatherStation_FindStation(integer $InstanceID)`
 
-Holt die Daten der Wetterstation ab
+Sucht die Wetterstation im Netzwerk und gibt die IP Adresse zurück
 
 
 ###  b. GUIDs und Datenaustausch:
