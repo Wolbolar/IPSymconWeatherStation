@@ -28,6 +28,12 @@ class WeatherStation extends IPSModule
 		$this->RegisterPropertyInteger('pressure_unit', 1);
 		$this->RegisterPropertyInteger('rain_unit', 1);
 		$this->RegisterPropertyInteger('altitude_above_sea_level', 0);
+		$this->RegisterPropertyInteger('model', 0);
+		$this->RegisterAttributeString('weatherstation_name', '');
+		$this->RegisterAttributeString('weatherstation_mac', '');
+		$this->RegisterAttributeString('weatherstation_adress', '');
+		$this->RegisterAttributeInteger('weatherstation_port', 0);
+
 
 		$this->RegisterPropertyInteger('UpdateInterval_Wunderground', 20);
 		$this->RegisterTimer('WundergroundTimerUpdate', 0, 'WeatherStation_Update_Wunderground(' . $this->InstanceID . ');');
@@ -164,6 +170,70 @@ class WeatherStation extends IPSModule
 		$this->SetTimerInterval('AmbientWeatherTimerUpdate', $interval);
 	}
 
+
+	/** Find WiFi Weather Station (UDP Broadcast)
+	 * @param string $ip
+	 * @param int $port
+	 */
+	public function FindStation(string $ip = '255.255.255.255', int $port = 46000)
+	{
+		$name = "";
+		$address = "";
+		$mac = "";
+		$port = 0;
+
+		// send command {0xff, 0xff, 0x12, 0x00, 0x04, 0x16}
+		$cmd = chr(0xFF) . chr(0xFF) . chr(0x12) . chr(0x00) . chr(0x04) . chr(0x16);
+
+		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+		socket_set_option($sock, SOL_SOCKET, SO_BROADCAST, 1);
+		// send commnd
+		socket_sendto($sock, $cmd, strlen($cmd), 0, $ip, $port);
+		// receive response
+		socket_recvfrom($sock, $buf, 39, 0, $ip, $port);
+		// HexDump($buf);
+		socket_close($sock);
+		// get data
+		$format =
+			'x5/' .        # Get the first 2 bytes
+			'C6MAC/' .     # Get the next 6 byte
+			'C4IP/' .      # Get the next 4 byte
+			'n1PORT/' .    # Get the next 2 byte
+			'x1/' .        # Get the next 1 byte
+			'A20NAME/' .   # Get the next 20 byte
+			'x1';          # Get the next 1 byte
+		$array = unpack($format, $buf);
+		$this->SendDebug("Weatherstation Payload", json_encode($array), 0);
+		if (isset($array['NAME'])) {
+			$name = $array['NAME'];
+			$this->SendDebug("Weatherstation name", $name, 0);
+		}
+		if ($name != "") {
+			$this->WriteAttributeString('weatherstation_name', $name);
+		}
+		if (isset($array['MAC1'])) {
+			$mac = dechex($array['MAC1']) . ':' . dechex($array['MAC2']) . ':' . dechex($array['MAC3']) . ':' . dechex($array['MAC4']) . ':' . dechex($array['MAC5']) . ':' . dechex($array['MAC6']);
+			$this->SendDebug("Weatherstation mac", $mac, 0);
+		}
+		if ($mac != "") {
+			$this->WriteAttributeString('weatherstation_mac', $mac);
+		}
+		if (isset($array['IP1'])) {
+			$address = $array['IP1'] . '.' . $array['IP2'] . '.' . $array['IP3'] . '.' . $array['IP4'];
+			$this->SendDebug("Weatherstation address", $address, 0);
+		}
+		if ($address != "") {
+			$this->WriteAttributeString('weatherstation_adress', $address);
+		}
+		if (isset($array['PORT'])) {
+			$port = $array['PORT'];
+			$this->SendDebug("Weatherstation port", $port, 0);
+		}
+		if ($port != 0) {
+			$this->WriteAttributeString('weatherstation_port', $port);
+		}
+	}
+
 	public function GetData()
 	{
 
@@ -233,20 +303,17 @@ class WeatherStation extends IPSModule
 		$altitude = $this->ReadPropertyInteger("altitude_above_sea_level");
 
 		$g0 = 9.80665;                                         // Normwert der Fallbeschleunigung
-		$R  = 287.05;                                          // Gaskonstante trockener Luft
-		$T  = 273.15;                                          // 0°C in Kelvin
+		$R = 287.05;                                          // Gaskonstante trockener Luft
+		$T = 273.15;                                          // 0°C in Kelvin
 		$Ch = 0.12;                                            // Beiwert zu E
-		if ($temperature < 9.1)
-		{
-			$E = 5.6402*(-0.0916 + exp(0.06*$temperature));        // Dampfdruck des Wasserdampfanteils bei t < 9.1°C
+		if ($temperature < 9.1) {
+			$E = 5.6402 * (-0.0916 + exp(0.06 * $temperature));        // Dampfdruck des Wasserdampfanteils bei t < 9.1°C
+		} else {
+			$E = 18.2194 * (1.0463 - exp(-0.0666 * $temperature));    // Dampfdruck des Wasserdampfanteils bei t >= 9.1°C
 		}
-		else
-		{
-			$E  = 18.2194*(1.0463 - exp(-0.0666*$temperature));    // Dampfdruck des Wasserdampfanteils bei t >= 9.1°C
-		}
-		$a  = 0.0065;                                          // vertikaler Temperaturgradient
-		$xp = $altitude*$g0/($R*($T+$temperature + $Ch*$E + $a*$altitude/2)); // Exponent für Formel
-		$p0 = $pascal*exp($xp);                             // Formel für den NN-bezogenen Luftdruck laut Wikipedia
+		$a = 0.0065;                                          // vertikaler Temperaturgradient
+		$xp = $altitude * $g0 / ($R * ($T + $temperature + $Ch * $E + $a * $altitude / 2)); // Exponent für Formel
+		$p0 = $pascal * exp($xp);                             // Formel für den NN-bezogenen Luftdruck laut Wikipedia
 		return $p0;
 	}
 
@@ -273,8 +340,7 @@ class WeatherStation extends IPSModule
 				$this->SendDebug("Weatherstation:", json_encode($payload->Buffer), 0);
 				$this->WriteData($payload->Buffer);
 			}
-		}
-		else{
+		} else {
 			$this->SendDebug("Weatherstation:", json_encode($payload->Buffer), 0);
 			$this->WriteData($payload->Buffer);
 		}
@@ -283,100 +349,158 @@ class WeatherStation extends IPSModule
 	protected function WriteData($payloadraw)
 	{
 		$payload = substr($payloadraw, 4, strlen($payloadraw) - 4);
-		$url = "http://192.168.1.1/" . $payload;
+		$address = $this->ReadAttributeString('weatherstation_adress');
+		$url = "http://" . $address . "/" . $payload;
 		$this->SendDebug("Weatherstation:", $url, 0);
 		$query = parse_url($url, PHP_URL_QUERY);
 		parse_str($query, $data);
 		$temp_unit = $this->ReadPropertyInteger("temp_unit");
 		$speed_unit = $this->ReadPropertyInteger("speed_unit");
 		$pressure_unit = $this->ReadPropertyInteger("pressure_unit");
-		$indoor_temperature = $data["indoortempf"];
-		$this->SendDebug("Weatherstation:", "indoor temperature: " . $indoor_temperature, 0);
-		$temperature = $data["tempf"];
-		$this->SendDebug("Weatherstation:", "temperature: " . $temperature, 0);
-		$dewpoint = $data["dewptf"];
-		$this->SendDebug("Weatherstation:", "dewpoint: " . $dewpoint, 0);
-		$windchill = $data["windchillf"];
-		$this->SendDebug("Weatherstation:", "windchill: " . $windchill, 0);
-		if ($temp_unit == 1) {
-			$this->SetValue("Indoor_Temp", $this->FahrenheitToCelsius($indoor_temperature));
-			$this->SetValue("Outdoor_Temp", $this->FahrenheitToCelsius($temperature));
-			$this->SetValue("Windchill", $this->FahrenheitToCelsius($windchill));
-			$this->SetValue("Dewpoint", $this->FahrenheitToCelsius($dewpoint));
-		} else {
-			$this->SetValue("Indoor_Temp", floatval($indoor_temperature));
-			$this->SetValue("Outdoor_Temp", floatval($temperature));
-			$this->SetValue("Windchill", floatval($dewpoint));
-			$this->SetValue("Dewpoint", floatval($windchill));
+		if (isset($data["indoortempf"])) {
+			$indoor_temperature = $data["indoortempf"];
+			$this->SendDebug("Weatherstation:", "indoor temperature: " . $indoor_temperature, 0);
+			if ($temp_unit == 1) {
+				$this->SetValue("Indoor_Temp", $this->FahrenheitToCelsius($indoor_temperature));
+			} else {
+				$this->SetValue("Indoor_Temp", floatval($indoor_temperature));
+			}
 		}
-		$indoorhumidity = $data["indoorhumidity"];
-		$this->SendDebug("Weatherstation:", "indoor humidity: " . $indoorhumidity, 0);
-		$humidity = $data["humidity"];
-		$this->SendDebug("Weatherstation:", "windchill: " . $humidity, 0);
-		$this->SetValue("Indoor_Humidity", floatval($indoorhumidity));
-		$this->SetValue("Outdoor_Humidity", floatval($humidity));
-		$windspeed = $data["windspeedmph"];
-		$this->SendDebug("Weatherstation:", "windspeed: " . $windspeed, 0);
-		$windgust = $data["windgustmph"];
-		$this->SendDebug("Weatherstation:", "windgust: " . $windgust, 0);
-		if ($speed_unit == 1) {
-			$this->SetValue("Windspeed_km", $this->MilesToKilometer($windspeed));
-			$this->SetValue("Windspeed_ms", $this->MPHToMS($windspeed));
-			$this->SetValue("Windgust", $this->MilesToKilometer($windgust));
-		} else {
-			$this->SetValue("Windspeed_km", floatval($windspeed));
-			$this->SetValue("Windspeed_ms", $this->MPHToMS($windspeed));
-			$this->SetValue("Windgust", floatval($windgust));
+		if (isset($data["tempf"])) {
+			$temperature = $data["tempf"];
+			$this->SendDebug("Weatherstation:", "temperature: " . $temperature, 0);
+			if ($temp_unit == 1) {
+				$this->SetValue("Outdoor_Temp", $this->FahrenheitToCelsius($temperature));
+			} else {
+				$this->SetValue("Outdoor_Temp", floatval($temperature));
+			}
 		}
-		$winddir = $data["winddir"];
-		$this->SendDebug("Weatherstation:", "wind direction: " . $winddir, 0);
-		$this->SetValue("Wind_Direction", intval($winddir));
-		$absbaromin = $data["absbaromin"];
-		$this->SendDebug("Weatherstation:", "barometer min: " . $absbaromin, 0);
-		$baromin = $data["baromin"];
-		$this->SendDebug("Weatherstation:", "abs barometer min: " . $baromin, 0);
-
-		if ($pressure_unit == 1) {
-			$this->SetValue("absbaromin", $this->Pressure_absolute($absbaromin));
-			$this->SetValue("baromin", $this->Pressure($baromin, $this->FahrenheitToCelsius($temperature)));
-		} else {
-			$this->SetValue("absbaromin", floatval($absbaromin));
-			$this->SetValue("baromin", floatval($baromin));
+		if (isset($data["dewptf"])) {
+			$dewpoint = $data["dewptf"];
+			$this->SendDebug("Weatherstation:", "dewpoint: " . $dewpoint, 0);
+			if ($temp_unit == 1) {
+				$this->SetValue("Dewpoint", $this->FahrenheitToCelsius($dewpoint));
+			} else {
+				$this->SetValue("Dewpoint", floatval($dewpoint));
+			}
 		}
-		$rainin = $data["rainin"];
-		$this->SendDebug("Weatherstation:", "rain: " . $rainin, 0);
-		$dailyrainin = $data["dailyrainin"];
-		$this->SendDebug("Weatherstation:", "daily rain: " . $dailyrainin, 0);
-		$weeklyrainin = $data["weeklyrainin"];
-		$this->SendDebug("Weatherstation:", "weekly rain: " . $weeklyrainin, 0);
-		$monthlyrainin = $data["monthlyrainin"];
-		$this->SendDebug("Weatherstation:", "monthly rain: " . $monthlyrainin, 0);
-		$solarradiation = $data["solarradiation"];
-		$this->SendDebug("Weatherstation:", "solar radiation: " . $solarradiation, 0);
-		$uv = $data["UV"];
-		$this->SendDebug("Weatherstation:", "uv: " . $uv, 0);
-		$dateutc = $data["dateutc"];
-		$this->SendDebug("Weatherstation:", "date utc: " . $dateutc, 0);
-		$softwaretype = $data["softwaretype"];
-		$this->SendDebug("Weatherstation:", "software type: " . $softwaretype, 0);
-		$action = $data["action"];
-		$this->SendDebug("Weatherstation:", "action: " . $action, 0);
-		$realtime = $data["realtime"];
-		$this->SendDebug("Weatherstation:", "realtime: " . $realtime, 0);
-		$rtfreq = $data["rtfreq"];
-		$this->SendDebug("Weatherstation:", "rt freq: " . $rtfreq, 0);
-
-		$this->SetValue("rainin", $this->Rain($rainin));
-		$this->SetValue("dailyrainin", $this->Rain($dailyrainin));
-		$this->SetValue("weeklyrainin", $this->Rain($weeklyrainin));
-		$this->SetValue("monthlyrainin", $this->Rain($monthlyrainin));
-		$this->SetValue("solarradiation", floatval($solarradiation));
-		$this->SetValue("UV", intval($uv));
-		$this->SetValue("Date", $dateutc);
-		$this->SetValue("Software_Type", $softwaretype);
-		$this->SetValue("Action", $action);
-		$this->SetValue("Realtime", intval($realtime));
-		$this->SetValue("Frequence", intval($rtfreq));
+		if (isset($data["windchillf"])) {
+			$windchill = $data["windchillf"];
+			$this->SendDebug("Weatherstation:", "windchill: " . $windchill, 0);
+			if ($temp_unit == 1) {
+				$this->SetValue("Windchill", $this->FahrenheitToCelsius($windchill));
+			} else {
+				$this->SetValue("Windchill", floatval($windchill));
+			}
+		}
+		if (isset($data["indoorhumidity"])) {
+			$indoorhumidity = $data["indoorhumidity"];
+			$this->SendDebug("Weatherstation:", "indoor humidity: " . $indoorhumidity, 0);
+			$this->SetValue("Indoor_Humidity", floatval($indoorhumidity));
+		}
+		if (isset($data["humidity"])) {
+			$humidity = $data["humidity"];
+			$this->SendDebug("Weatherstation:", "windchill: " . $humidity, 0);
+			$this->SetValue("Outdoor_Humidity", floatval($humidity));
+		}
+		if (isset($data["windspeedmph"])) {
+			$windspeed = $data["windspeedmph"];
+			$this->SendDebug("Weatherstation:", "windspeed: " . $windspeed, 0);
+			if ($speed_unit == 1) {
+				$this->SetValue("Windspeed_km", $this->MilesToKilometer($windspeed));
+				$this->SetValue("Windspeed_ms", $this->MPHToMS($windspeed));
+			} else {
+				$this->SetValue("Windspeed_km", floatval($windspeed));
+				$this->SetValue("Windspeed_ms", $this->MPHToMS($windspeed));
+			}
+		}
+		if (isset($data["windgustmph"])) {
+			$windgust = $data["windgustmph"];
+			$this->SendDebug("Weatherstation:", "windgust: " . $windgust, 0);
+			if ($speed_unit == 1) {
+				$this->SetValue("Windgust", $this->MilesToKilometer($windgust));
+			} else {
+				$this->SetValue("Windgust", floatval($windgust));
+			}
+		}
+		if (isset($data["winddir"])) {
+			$winddir = $data["winddir"];
+			$this->SendDebug("Weatherstation:", "wind direction: " . $winddir, 0);
+			$this->SetValue("Wind_Direction", intval($winddir));
+		}
+		if (isset($data["absbaromin"])) {
+			$absbaromin = $data["absbaromin"];
+			$this->SendDebug("Weatherstation:", "barometer min: " . $absbaromin, 0);
+			if ($pressure_unit == 1) {
+				$this->SetValue("absbaromin", $this->Pressure_absolute($absbaromin));
+			} else {
+				$this->SetValue("absbaromin", floatval($absbaromin));
+			}
+		}
+		if (isset($data["baromin"])) {
+			$baromin = $data["baromin"];
+			$this->SendDebug("Weatherstation:", "abs barometer min: " . $baromin, 0);
+			if ($pressure_unit == 1) {
+				$this->SetValue("baromin", $this->Pressure($baromin, $this->FahrenheitToCelsius($temperature)));
+			} else {
+				$this->SetValue("baromin", floatval($baromin));
+			}
+		}
+		if (isset($data["rainin"])) {
+			$rainin = $data["rainin"];
+			$this->SendDebug("Weatherstation:", "rain: " . $rainin, 0);
+			$this->SetValue("rainin", $this->Rain($rainin));
+		}
+		if (isset($data["dailyrainin"])) {
+			$dailyrainin = $data["dailyrainin"];
+			$this->SendDebug("Weatherstation:", "daily rain: " . $dailyrainin, 0);
+			$this->SetValue("dailyrainin", $this->Rain($dailyrainin));
+		}
+		if (isset($data["weeklyrainin"])) {
+			$weeklyrainin = $data["weeklyrainin"];
+			$this->SendDebug("Weatherstation:", "weekly rain: " . $weeklyrainin, 0);
+			$this->SetValue("weeklyrainin", $this->Rain($weeklyrainin));
+		}
+		if (isset($data["monthlyrainin"])) {
+			$monthlyrainin = $data["monthlyrainin"];
+			$this->SendDebug("Weatherstation:", "monthly rain: " . $monthlyrainin, 0);
+			$this->SetValue("monthlyrainin", $this->Rain($monthlyrainin));
+		}
+		if (isset($data["solarradiation"])) {
+			$solarradiation = $data["solarradiation"];
+			$this->SendDebug("Weatherstation:", "solar radiation: " . $solarradiation, 0);
+			$this->SetValue("solarradiation", floatval($solarradiation));
+		}
+		if (isset($data["UV"])) {
+			$uv = $data["UV"];
+			$this->SendDebug("Weatherstation:", "uv: " . $uv, 0);
+			$this->SetValue("UV", intval($uv));
+		}
+		if (isset($data["dateutc"])) {
+			$dateutc = $data["dateutc"];
+			$this->SendDebug("Weatherstation:", "date utc: " . $dateutc, 0);
+			$this->SetValue("Date", $dateutc);
+		}
+		if (isset($data["softwaretype"])) {
+			$softwaretype = $data["softwaretype"];
+			$this->SendDebug("Weatherstation:", "software type: " . $softwaretype, 0);
+			$this->SetValue("Software_Type", $softwaretype);
+		}
+		if (isset($data["action"])) {
+			$action = $data["action"];
+			$this->SendDebug("Weatherstation:", "action: " . $action, 0);
+			$this->SetValue("Action", $action);
+		}
+		if (isset($data["realtime"])) {
+			$realtime = $data["realtime"];
+			$this->SendDebug("Weatherstation:", "realtime: " . $realtime, 0);
+			$this->SetValue("Realtime", intval($realtime));
+		}
+		if (isset($data["rtfreq"])) {
+			$rtfreq = $data["rtfreq"];
+			$this->SendDebug("Weatherstation:", "rt freq: " . $rtfreq, 0);
+			$this->SetValue("Frequence", intval($rtfreq));
+		}
 	}
 
 	public function Update_Wunderground()
@@ -560,6 +684,7 @@ class WeatherStation extends IPSModule
 
 	public function Update_Weatherbug()
 	{
+
 	}
 
 	public function AlexaData()
@@ -933,7 +1058,7 @@ class WeatherStation extends IPSModule
 		$location = $this->getlocation();
 		$Latitude = $location["Latitude"];
 		$Longitude = $location["Longitude"];
-		$altitude = $Latitude*$Longitude;
+		$altitude = $Latitude * $Longitude;
 		return $altitude;
 	}
 
@@ -977,5 +1102,3 @@ Bei Wunderground die Wetterstation anlegen
 [Wunderground PWS](https://ifttt.com/ambient_weather "Wunderground PWS")
 	 */
 }
-
-?>
