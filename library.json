@@ -4,10 +4,10 @@
 	"name": "WeatherStation",
 	"url": "https://github.com/Wolbolar/IPSymconSainlogicWeatherStation",
 	"compatibility": {
-    "version": "4.2",
+    "version": "5.1",
     "date": 1491343200
 	},
-	"version": "0.1",
-	"build": 0,
+	"version": "0.2",
+	"build": 2,
 	"date": 0
 }

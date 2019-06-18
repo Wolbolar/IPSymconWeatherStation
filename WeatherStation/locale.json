@@ -1,6 +1,8 @@
 {
   "translations": {
     "de": {
+      "Model": "Modell",
+      "Please select model": "Bitte das Modell auswählen",
       "Altitude above sea level for the location of the weatherstation": "Höhe über dem Meeresspiegel des Standorts der Wetterstation",
       "altitude (m)": "Höhe (m)",
       "Data for Ambient Weather": "Daten für Ambient Weather",
@@ -20,6 +22,10 @@
       "Daily Rain": "Niederschlag täglich",
       "Weekly Rain": "Niederschlag wöchentlich",
       "Monthly Rain": "Niederschlag monatlich",
+      "Year Rain": "Niederschlag jahr",
+      "Total Rain": "Gesamtregenmenge",
+      "illuminance": "Beleuchtungsstärke",
+      "heat index": "Hitze Index",
       "Solar Radiation": "Sonneneinstrahlung",
       "UV": "UV",
       "Date": "Datum",
