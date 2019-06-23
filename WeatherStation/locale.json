@@ -1,6 +1,12 @@
 {
   "translations": {
     "de": {
+      "Find Weatherstation": "Wetterstation suchen",
+      "name": "Name",
+      "address": "Adresse",
+      "port": "Port",
+      "Weatherstation Info": "Wetterstation Informationen",
+      "Sainlogic (Firmware 1.3.8 or above)": "Sainlogic (Firmware 1.3.8 oder größer)",
       "Model": "Modell",
       "Please select model": "Bitte das Modell auswählen",
       "Altitude above sea level for the location of the weatherstation": "Höhe über dem Meeresspiegel des Standorts der Wetterstation",
@@ -33,7 +39,7 @@
       "Action": "Aktion",
       "Realtime": "Zeit real",
       "Frequence": "Frequenz",
-      "MAC adress": "MAC Adresse",
+      "MAC address": "MAC Adresse",
       "MAC": "MAC",
       "Wunderground Station ID": "Wunderground Stations ID",
       "Station ID": "Stations ID",
