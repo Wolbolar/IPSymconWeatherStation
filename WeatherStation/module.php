@@ -694,7 +694,16 @@ class WeatherStation extends IPSModule
 		{
 			$address = "192.168.1.1";
 		}
-		$url = "http://" . $address . "/" . $payload;
+		$this->SendDebug("Weatherstation payload:", $payload, 0);
+		$first_char = substr($payload, 0, 1);
+		if($first_char == "/")
+		{
+			$url = "http://" . $address . $payload;
+		}
+		else
+		{
+			$url = "http://" . $address . "/" . $payload;
+		}
 		$this->SendDebug("Weatherstation:", $url, 0);
 		$query = parse_url($url, PHP_URL_QUERY);
 		parse_str($query, $data);
