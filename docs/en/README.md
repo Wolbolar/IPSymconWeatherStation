@@ -58,7 +58,7 @@ Then click on the module store icon (IP-Symcon > 5.1) in the upper right corner.
 In the search field type
 
 ```
-Wetterstation
+Weatherstation
 ```  
 
 
