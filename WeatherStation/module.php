@@ -1107,12 +1107,12 @@ class WeatherStation extends IPSModule
 
         IPS_SetVariableProfileIcon($Name, $Icon);
         IPS_SetVariableProfileText($Name, $Prefix, $Suffix);
-		if ($Vartype != VARIABLETYPE_STRING) {
-			IPS_SetVariableProfileDigits($Name, $Digits); //  Nachkommastellen
-			IPS_SetVariableProfileValues(
-				$Name, $MinValue, $MaxValue, $StepSize
-			); // string $ProfilName, float $Minimalwert, float $Maximalwert, float $Schrittweite
-		}
+        if ($Vartype != VARIABLETYPE_STRING) {
+            IPS_SetVariableProfileDigits($Name, $Digits); //  Nachkommastellen
+            IPS_SetVariableProfileValues(
+                $Name, $MinValue, $MaxValue, $StepSize
+            ); // string $ProfilName, float $Minimalwert, float $Maximalwert, float $Schrittweite
+        }
     }
 
     protected function RegisterProfileAssociation($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $Stepsize, $Digits, $Vartype, $Associations)
