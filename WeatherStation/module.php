@@ -388,7 +388,7 @@ class WeatherStation extends IPSModule
             $pressure_unit = $this->ReadPropertyInteger('pressure_unit');
 
             if (isset($array['Innentemperatur'])) {
-                $indoor_temperature = $array['Innentemperatur'] / 10.;
+                $indoor_temperature = floatval($array['Innentemperatur'] / 10.);
                 $this->SendDebug('Weatherstation:', 'indoor temperature: ' . $indoor_temperature, 0);
                 if ($temp_unit == 1) {
                     $this->SetValue('Indoor_Temp', $this->FahrenheitToCelsius($indoor_temperature));
@@ -397,7 +397,7 @@ class WeatherStation extends IPSModule
                 }
             }
             if (isset($array['Aussentemperatur'])) {
-                $temperature = $array['Aussentemperatur'] / 10.;
+                $temperature = floatval($array['Aussentemperatur'] / 10.);
                 $this->SendDebug('Weatherstation:', 'temperature: ' . $temperature, 0);
                 if ($temp_unit == 1) {
                     $this->SetValue('Outdoor_Temp', $this->FahrenheitToCelsius($temperature));
@@ -406,7 +406,7 @@ class WeatherStation extends IPSModule
                 }
             }
             if (isset($array['Taupunkt'])) {
-                $dewpoint = $array['Taupunkt'] / 10.;
+                $dewpoint = floatval($array['Taupunkt'] / 10.);
                 $this->SendDebug('Weatherstation:', 'dewpoint: ' . $dewpoint, 0);
                 if ($temp_unit == 1) {
                     $this->SetValue('Dewpoint', $this->FahrenheitToCelsius($dewpoint));
@@ -415,7 +415,7 @@ class WeatherStation extends IPSModule
                 }
             }
             if (isset($array['Gefuehlte'])) {
-                $windchill = $array['Gefuehlte'] / 10.;
+                $windchill = floatval($array['Gefuehlte'] / 10.);
                 $this->SendDebug('Weatherstation:', 'windchill: ' . $windchill, 0);
                 if ($temp_unit == 1) {
                     $this->SetValue('Windchill', $this->FahrenheitToCelsius($windchill));
@@ -434,23 +434,23 @@ class WeatherStation extends IPSModule
                 $this->SetValue('Outdoor_Humidity', floatval($humidity));
             }
             if (isset($array['Windspeed'])) {
-                $windspeed = ($array['Windspeed'] /10.) * 3.6;
+                $windspeed = floatval(($array['Windspeed'] /10.) * 3.6);
                 $this->SendDebug('Weatherstation:', 'windspeed: ' . $windspeed, 0);
                 if ($speed_unit == 1) {
                     $this->SetValue('Windspeed_km', $this->MilesToKilometer($windspeed));
                     $this->SetValue('Windspeed_ms', $this->MPHToMS($windspeed));
                 } else {
-                    $this->SetValue('Windspeed_km', floatval($windspeed));
+                    $this->SetValue('Windspeed_km', $windspeed);
                     $this->SetValue('Windspeed_ms', $this->MPHToMS($windspeed));
                 }
             }
             if (isset($array['Windboe'])) {
-                $windgust = ($array['Windboe'] /10.) * 3.6;
+                $windgust = floatval(($array['Windboe'] /10.) * 3.6);
                 $this->SendDebug('Weatherstation:', 'windgust: ' . $windgust, 0);
                 if ($speed_unit == 1) {
                     $this->SetValue('Windgust', $this->MilesToKilometer($windgust));
                 } else {
-                    $this->SetValue('Windgust', floatval($windgust));
+                    $this->SetValue('Windgust', $windgust);
                 }
             }
             if (isset($array['Windrichtung'])) {
@@ -459,25 +459,25 @@ class WeatherStation extends IPSModule
                 $this->SetValue('Wind_Direction', intval($winddir));
             }
             if (isset($array['AbsDruck'])) {
-                $absbaromin = $array['AbsDruck'] / 10.;
+                $absbaromin = floatval($array['AbsDruck'] / 10.);
                 $this->SendDebug('Weatherstation:', 'abs barometer min: ' . $absbaromin, 0);
                 if ($pressure_unit == 1) {
                     $this->SetValue('absbaromin', $this->Pressure_absolute($absbaromin));
                 } else {
-                    $this->SetValue('absbaromin', floatval($absbaromin));
+                    $this->SetValue('absbaromin', $absbaromin);
                 }
             }
             if (isset($array['RelDruck'])) {
-                $baromin = $array['RelDruck'] / 10.;
+                $baromin = floatval($array['RelDruck'] / 10.);
                 $this->SendDebug('Weatherstation:', 'barometer min: ' . $baromin, 0);
                 if ($pressure_unit == 1) {
                     $this->SetValue('baromin', $this->Pressure($baromin, $this->FahrenheitToCelsius($temperature)));
                 } else {
-                    $this->SetValue('baromin', floatval($baromin));
+                    $this->SetValue('baromin', $baromin);
                 }
             }
             if (isset($array['RegenH'])) {
-                $rainin = $array['RegenH'] / 10.;
+                $rainin = floatval($array['RegenH'] / 10.);
                 $this->SendDebug('Weatherstation:', 'rain: ' . $rainin, 0);
                 $this->SetValue('rainin', $this->Rain($rainin));
             }
@@ -709,50 +709,50 @@ class WeatherStation extends IPSModule
         $speed_unit = $this->ReadPropertyInteger('speed_unit');
         $pressure_unit = $this->ReadPropertyInteger('pressure_unit');
         if (isset($data['indoortempf'])) {
-            $indoor_temperature = $data['indoortempf'];
+            $indoor_temperature = floatval($data['indoortempf']);
             $this->SendDebug('Weatherstation:', 'indoor temperature: ' . $indoor_temperature, 0);
             if ($temp_unit == 1) {
                 $this->SetValue('Indoor_Temp', $this->FahrenheitToCelsius($indoor_temperature));
             } else {
-                $this->SetValue('Indoor_Temp', floatval($indoor_temperature));
+                $this->SetValue('Indoor_Temp', $indoor_temperature);
             }
         }
         if (isset($data['tempf'])) {
-            $temperature = $data['tempf'];
+            $temperature = floatval($data['tempf']);
             $this->SendDebug('Weatherstation:', 'temperature: ' . $temperature, 0);
             if ($temp_unit == 1) {
                 $this->SetValue('Outdoor_Temp', $this->FahrenheitToCelsius($temperature));
             } else {
-                $this->SetValue('Outdoor_Temp', floatval($temperature));
+                $this->SetValue('Outdoor_Temp', $temperature);
             }
         }
         if (isset($data['dewptf'])) {
-            $dewpoint = $data['dewptf'];
+            $dewpoint = floatval($data['dewptf']);
             $this->SendDebug('Weatherstation:', 'dewpoint: ' . $dewpoint, 0);
             if ($temp_unit == 1) {
                 $this->SetValue('Dewpoint', $this->FahrenheitToCelsius($dewpoint));
             } else {
-                $this->SetValue('Dewpoint', floatval($dewpoint));
+                $this->SetValue('Dewpoint', $dewpoint);
             }
         }
         if (isset($data['windchillf'])) {
-            $windchill = $data['windchillf'];
+            $windchill = floatval($data['windchillf']);
             $this->SendDebug('Weatherstation:', 'windchill: ' . $windchill, 0);
             if ($temp_unit == 1) {
                 $this->SetValue('Windchill', $this->FahrenheitToCelsius($windchill));
             } else {
-                $this->SetValue('Windchill', floatval($windchill));
+                $this->SetValue('Windchill', $windchill);
             }
         }
         if (isset($data['indoorhumidity'])) {
-            $indoorhumidity = $data['indoorhumidity'];
+            $indoorhumidity = floatval($data['indoorhumidity']);
             $this->SendDebug('Weatherstation:', 'indoor humidity: ' . $indoorhumidity, 0);
-            $this->SetValue('Indoor_Humidity', floatval($indoorhumidity));
+            $this->SetValue('Indoor_Humidity', $indoorhumidity);
         }
         if (isset($data['humidity'])) {
-            $humidity = $data['humidity'];
+            $humidity = floatval($data['humidity']);
             $this->SendDebug('Weatherstation:', 'humidity: ' . $humidity, 0);
-            $this->SetValue('Outdoor_Humidity', floatval($humidity));
+            $this->SetValue('Outdoor_Humidity', $humidity);
         }
         if (isset($data['windspeedmph'])) {
             $windspeed = $data['windspeedmph'];
