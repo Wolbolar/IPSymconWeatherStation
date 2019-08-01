@@ -900,21 +900,21 @@ class WeatherStation extends IPSModule
     {
         $param = '&dateutc=now';
         // $param = '&dateutc=' . rawurlencode(date('Y-m-d G:i:s', time()));
-        $param .= '&indoortempf=' . str_replace(',', '.', $this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent('Indoor_Temp'))));
-        $param .= '&tempf=' . str_replace(',', '.', $this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent('Outdoor_Temp'))));
-        $param .= '&dewptf=' . str_replace(',', '.', $this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent('Dewpoint'))));
-        $param .= '&windchillf=' . str_replace(',', '.', $this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent('Windchill'))));
+        $param .= '&indoortempf=' . str_replace(',', '.', strval($this->CelsiusToFahrenheit(GetValueFloat($this->GetIDForIdent('Indoor_Temp')))));
+        $param .= '&tempf=' . str_replace(',', '.', strval($this->CelsiusToFahrenheit(GetValueFloat($this->GetIDForIdent('Outdoor_Temp')))));
+        $param .= '&dewptf=' . str_replace(',', '.', strval($this->CelsiusToFahrenheit(GetValueFloat($this->GetIDForIdent('Dewpoint')))));
+        $param .= '&windchillf=' . str_replace(',', '.', strval($this->CelsiusToFahrenheit(GetValueFloat($this->GetIDForIdent('Windchill')))));
         $param .= '&indoorhumidity=' . str_replace(',', '.', GetValue($this->GetIDForIdent('Indoor_Humidity')));
         $param .= '&humidity=' . str_replace(',', '.', GetValue($this->GetIDForIdent('Outdoor_Humidity')));
-        $param .= '&windspeedmph=' . str_replace(',', '.', $this->MSToMPH(GetValue($this->GetIDForIdent('Windspeed_ms'))));
-        $param .= '&windgustmph=' . str_replace(',', '.', $this->MSToMPH(GetValue($this->GetIDForIdent('Windgust'))));
-        $param .= '&winddir=' . str_replace(',', '.', GetValue($this->GetIDForIdent('Wind_Direction')));
+        $param .= '&windspeedmph=' . str_replace(',', '.', strval($this->MSToMPH(GetValueFloat($this->GetIDForIdent('Windspeed_ms')))));
+        $param .= '&windgustmph=' . str_replace(',', '.', strval($this->MSToMPH(GetValueFloat($this->GetIDForIdent('Windgust')))));
+        $param .= '&winddir=' . str_replace(',', '.', strval(GetValue($this->GetIDForIdent('Wind_Direction'))));
         $param .= '&absbaromin=' . str_replace(',', '.', $this->PressurehPaToBar(GetValue($this->GetIDForIdent('absbaromin'))));
         $param .= '&baromin=' . str_replace(',', '.', $this->PressurehPaToBar(GetValue($this->GetIDForIdent('baromin'))));
-        $param .= '&rainin=' . str_replace(',', '.', $this->RainToInch(GetValue($this->GetIDForIdent('rainin'))));
-        $param .= '&dailyrainin=' . str_replace(',', '.', $this->RainToInch(GetValue($this->GetIDForIdent('dailyrainin'))));
-        $param .= '&weeklyrainin=' . str_replace(',', '.', $this->RainToInch(GetValue($this->GetIDForIdent('weeklyrainin'))));
-        $param .= '&monthlyrainin=' . str_replace(',', '.', $this->RainToInch(GetValue($this->GetIDForIdent('monthlyrainin'))));
+        $param .= '&rainin=' . str_replace(',', '.', strval($this->RainToInch(GetValueFloat($this->GetIDForIdent('rainin')))));
+        $param .= '&dailyrainin=' . str_replace(',', '.', strval($this->RainToInch(GetValueFloat($this->GetIDForIdent('dailyrainin')))));
+        $param .= '&weeklyrainin=' . str_replace(',', '.', strval($this->RainToInch(GetValueFloat($this->GetIDForIdent('weeklyrainin')))));
+        $param .= '&monthlyrainin=' . str_replace(',', '.', strval($this->RainToInch(GetValueFloat($this->GetIDForIdent('monthlyrainin')))));
         $param .= '&solarradiation=' . str_replace(',', '.', GetValue($this->GetIDForIdent('solarradiation')));
         $param .= '&UV=' . str_replace(',', '.', GetValue($this->GetIDForIdent('UV')));
         $param .= '&softwaretype=EasyWeatherV1.2.1';
@@ -960,9 +960,9 @@ class WeatherStation extends IPSModule
         $param .= '&chill=' . intval(GetValue($this->GetIDForIdent('Windchill')) * 10);
         $param .= '&humin=' . intval(GetValue($this->GetIDForIdent('Indoor_Humidity')));
         $param .= '&hum=' . intval(GetValue($this->GetIDForIdent('Outdoor_Humidity')));
-        $param .= '&wspd=' . intval($this->KilometerToKN(GetValue($this->GetIDForIdent('Windspeed_ms'))) * 10);
-        $param .= '&wspdhi=' . intval($this->KilometerToKN(GetValue($this->GetIDForIdent('Windgust'))) * 10);
-        $param .= '&wspdavg=' . intval($this->KilometerToKN(GetValue($this->GetIDForIdent('Windgust'))) * 10);
+        $param .= '&wspd=' . intval($this->KilometerToKN(GetValueFloat($this->GetIDForIdent('Windspeed_ms'))) * 10);
+        $param .= '&wspdhi=' . intval($this->KilometerToKN(GetValueFloat($this->GetIDForIdent('Windgust'))) * 10);
+        $param .= '&wspdavg=' . intval($this->KilometerToKN(GetValueFloat($this->GetIDForIdent('Windgust'))) * 10);
         $param .= '&wdir=' . intval(GetValue($this->GetIDForIdent('Wind_Direction')));
         $param .= '&bar=' . intval(GetValue($this->GetIDForIdent('baromin')) * 10);
         $param .= '&rain=' . intval(GetValue($this->GetIDForIdent('rainin')));
@@ -1008,10 +1008,10 @@ class WeatherStation extends IPSModule
         $param = '&stationtype=WS-1600-IP';
         $param .= '&dateutc=' . rawurlencode(date('Y-m-d+G:i:s', time()));
         $param .= '&winddir=' . rawurlencode(GetValue($this->GetIDForIdent('Wind_Direction')));
-        $param .= '&windspeedmph=' . rawurlencode($this->FormatFloat($this->MSToMPH(GetValue($this->GetIDForIdent('Windspeed_ms')))));
-        $param .= '&windgustmph=' . rawurlencode($this->FormatFloat($this->MSToMPH(GetValue($this->GetIDForIdent('Windgust')))));
+        $param .= '&windspeedmph=' . rawurlencode($this->FormatFloat($this->MSToMPH(GetValueFloat($this->GetIDForIdent('Windspeed_ms')))));
+        $param .= '&windgustmph=' . rawurlencode($this->FormatFloat($this->MSToMPH(GetValueFloat($this->GetIDForIdent('Windgust')))));
         // &maxdailygust=4.47
-        $param .= '&tempf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent('Outdoor_Temp'))));
+        $param .= '&tempf=' . rawurlencode($this->CelsiusToFahrenheit(GetValueFloat($this->GetIDForIdent('Outdoor_Temp'))));
         $param .= '&humidity=' . rawurlencode(GetValue($this->GetIDForIdent('Outdoor_Humidity')));
         // &hourlyrainin=0.00
         $param .= '&dailyrainin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent('dailyrainin'))));
@@ -1019,7 +1019,7 @@ class WeatherStation extends IPSModule
         $param .= '&monthlyrainin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent('monthlyrainin'))));
         // &yearlyrainin=0.00
         // &totalrainin=0.00
-        $param .= '&tempinf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent('Indoor_Temp'))));
+        $param .= '&tempinf=' . rawurlencode($this->CelsiusToFahrenheit(GetValueFloat($this->GetIDForIdent('Indoor_Temp'))));
         $param .= '&humidityin=' . rawurlencode(intval(GetValue($this->GetIDForIdent('Indoor_Humidity'))));
         $param .= '&baromrelin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent('baromin'))));
         $param .= '&baromabsin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent('absbaromin'))));
@@ -1107,8 +1107,12 @@ class WeatherStation extends IPSModule
 
         IPS_SetVariableProfileIcon($Name, $Icon);
         IPS_SetVariableProfileText($Name, $Prefix, $Suffix);
-        IPS_SetVariableProfileDigits($Name, $Digits); //  Nachkommastellen
-        IPS_SetVariableProfileValues($Name, $MinValue, $MaxValue, $StepSize); // string $ProfilName, float $Minimalwert, float $Maximalwert, float $Schrittweite
+		if ($Vartype != VARIABLETYPE_STRING) {
+			IPS_SetVariableProfileDigits($Name, $Digits); //  Nachkommastellen
+			IPS_SetVariableProfileValues(
+				$Name, $MinValue, $MaxValue, $StepSize
+			); // string $ProfilName, float $Minimalwert, float $Maximalwert, float $Schrittweite
+		}
     }
 
     protected function RegisterProfileAssociation($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $Stepsize, $Digits, $Vartype, $Associations)
