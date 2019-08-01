@@ -755,23 +755,23 @@ class WeatherStation extends IPSModule
             $this->SetValue('Outdoor_Humidity', $humidity);
         }
         if (isset($data['windspeedmph'])) {
-            $windspeed = $data['windspeedmph'];
+            $windspeed = floatval($data['windspeedmph']);
             $this->SendDebug('Weatherstation:', 'windspeed: ' . $windspeed, 0);
             if ($speed_unit == 1) {
                 $this->SetValue('Windspeed_km', $this->MilesToKilometer($windspeed));
                 $this->SetValue('Windspeed_ms', $this->MPHToMS($windspeed));
             } else {
-                $this->SetValue('Windspeed_km', floatval($windspeed));
+                $this->SetValue('Windspeed_km', $windspeed);
                 $this->SetValue('Windspeed_ms', $this->MPHToMS($windspeed));
             }
         }
         if (isset($data['windgustmph'])) {
-            $windgust = $data['windgustmph'];
+            $windgust = floatval($data['windgustmph']);
             $this->SendDebug('Weatherstation:', 'windgust: ' . $windgust, 0);
             if ($speed_unit == 1) {
                 $this->SetValue('Windgust', $this->MilesToKilometer($windgust));
             } else {
-                $this->SetValue('Windgust', floatval($windgust));
+                $this->SetValue('Windgust', $windgust);
             }
         }
         if (isset($data['winddir'])) {
@@ -780,47 +780,47 @@ class WeatherStation extends IPSModule
             $this->SetValue('Wind_Direction', intval($winddir));
         }
         if (isset($data['absbaromin'])) {
-            $absbaromin = $data['absbaromin'];
+            $absbaromin = floatval($data['absbaromin']);
             $this->SendDebug('Weatherstation:', 'abs barometer min: ' . $absbaromin, 0);
             if ($pressure_unit == 1) {
                 $this->SetValue('absbaromin', $this->Pressure_absolute($absbaromin));
             } else {
-                $this->SetValue('absbaromin', floatval($absbaromin));
+                $this->SetValue('absbaromin', $absbaromin);
             }
         }
         if (isset($data['baromin'])) {
-            $baromin = $data['baromin'];
+            $baromin = floatval($data['baromin']);
             $this->SendDebug('Weatherstation:', 'barometer min: ' . $baromin, 0);
             if ($pressure_unit == 1) {
                 $this->SetValue('baromin', $this->Pressure($baromin, $this->FahrenheitToCelsius($temperature)));
             } else {
-                $this->SetValue('baromin', floatval($baromin));
+                $this->SetValue('baromin', $baromin);
             }
         }
         if (isset($data['rainin'])) {
-            $rainin = $data['rainin'];
+            $rainin = floatval($data['rainin']);
             $this->SendDebug('Weatherstation:', 'rain: ' . $rainin, 0);
             $this->SetValue('rainin', $this->Rain($rainin));
         }
         if (isset($data['dailyrainin'])) {
-            $dailyrainin = $data['dailyrainin'];
+            $dailyrainin = floatval($data['dailyrainin']);
             $this->SendDebug('Weatherstation:', 'daily rain: ' . $dailyrainin, 0);
             $this->SetValue('dailyrainin', $this->Rain($dailyrainin));
         }
         if (isset($data['weeklyrainin'])) {
-            $weeklyrainin = $data['weeklyrainin'];
+            $weeklyrainin = floatval($data['weeklyrainin']);
             $this->SendDebug('Weatherstation:', 'weekly rain: ' . $weeklyrainin, 0);
             $this->SetValue('weeklyrainin', $this->Rain($weeklyrainin));
         }
         if (isset($data['monthlyrainin'])) {
-            $monthlyrainin = $data['monthlyrainin'];
+            $monthlyrainin = floatval($data['monthlyrainin']);
             $this->SendDebug('Weatherstation:', 'monthly rain: ' . $monthlyrainin, 0);
             $this->SetValue('monthlyrainin', $this->Rain($monthlyrainin));
         }
         if (isset($data['solarradiation'])) {
-            $solarradiation = $data['solarradiation'];
+            $solarradiation = floatval($data['solarradiation']);
             $this->SendDebug('Weatherstation:', 'solar radiation: ' . $solarradiation, 0);
-            $this->SetValue('solarradiation', floatval($solarradiation));
+            $this->SetValue('solarradiation', $solarradiation);
         }
         if (isset($data['UV'])) {
             $uv = $data['UV'];
