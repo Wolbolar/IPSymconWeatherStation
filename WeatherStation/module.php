@@ -1232,7 +1232,7 @@ class WeatherStation extends IPSModule
                                  [
                                      'name'    => 'mac',
                                      'caption' => 'MAC',
-                                     'width'   => '150px',],
+                                     'width'   => '150px', ],
                                  [
                                      'name'    => 'address',
                                      'caption' => 'address',
