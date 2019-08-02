@@ -7,6 +7,18 @@ class WeatherStation extends IPSModule
     // helper properties
     private $position = 0;
 
+    private const Celsius          = 1; // Celsius °C
+    private const Fahrenheit       = 2; // Fahrenheit F
+    private const kmh              = 1; // kmh
+    private const mph              = 2; // mph
+    private const pascal           = 1; // pascal
+    private const bar              = 2; // bar
+    private const mm               = 1; // mm
+    private const inch             = 2; // inch
+    private const Sainlogic        = 1; // Sainlogic
+    private const ELV_WS980WiFi    = 2; // ELV WS980WiFi
+    private const Froggit_WH4000SE = 3; // Froggit WH4000SE
+
     public function Create()
     {
         //Never delete this line!
@@ -58,11 +70,11 @@ class WeatherStation extends IPSModule
         //Never delete this line!
         parent::ApplyChanges();
 
-        $temp_unit = $this->ReadPropertyInteger('temp_unit');
-        $speed_unit = $this->ReadPropertyInteger('speed_unit');
+        $temp_unit     = $this->ReadPropertyInteger('temp_unit');
+        $speed_unit    = $this->ReadPropertyInteger('speed_unit');
         $pressure_unit = $this->ReadPropertyInteger('pressure_unit');
 
-        if ($temp_unit == 1) {
+        if ($temp_unit == self::Celsius) {
             $this->RegisterVariableFloat('Indoor_Temp', $this->Translate('Indoor Temperature'), '~Temperature', $this->_getPosition());
             $this->RegisterVariableFloat('Outdoor_Temp', $this->Translate('Outdoor Temperature'), '~Temperature', $this->_getPosition());
             $this->RegisterVariableFloat('Windchill', $this->Translate('Windchill'), '~Temperature', $this->_getPosition());
@@ -76,7 +88,7 @@ class WeatherStation extends IPSModule
 
         $this->RegisterVariableFloat('Indoor_Humidity', $this->Translate('Indoor Humidity'), '~Humidity.F', $this->_getPosition());
         $this->RegisterVariableFloat('Outdoor_Humidity', $this->Translate('Outdoor Humidity'), '~Humidity.F', $this->_getPosition());
-        if ($speed_unit == 1) {
+        if ($speed_unit == self::kmh) {
             $this->RegisterVariableFloat('Windspeed_km', $this->Translate('Windspeed'), '~WindSpeed.kmh', $this->_getPosition());
             $this->RegisterVariableFloat('Windspeed_ms', $this->Translate('Windspeed'), '~WindSpeed.ms', $this->_getPosition());
             $this->RegisterVariableFloat('Windgust', $this->Translate('Wind gust'), '~WindSpeed.ms', $this->_getPosition());
@@ -88,7 +100,7 @@ class WeatherStation extends IPSModule
 
         $this->RegisterVariableInteger('Wind_Direction', $this->Translate('Wind Direction'), '~WindDirection', $this->_getPosition());
 
-        if ($pressure_unit == 1) {
+        if ($pressure_unit == self::pascal) {
             $this->RegisterVariableFloat('absbaromin', $this->Translate('Air Pressure absolut'), '~AirPressure.F', $this->_getPosition());
             $this->RegisterVariableFloat('baromin', $this->Translate('Air Pressure'), '~AirPressure.F', $this->_getPosition());
         } else {
@@ -109,8 +121,7 @@ class WeatherStation extends IPSModule
         $this->RegisterVariableInteger('Frequence', $this->Translate('Frequence'), '', $this->_getPosition());
 
         $model = $this->ReadPropertyInteger('model');
-        if($model == 2 || $model == 3)
-        {
+        if ($model == self::ELV_WS980WiFi || $model == self::Froggit_WH4000SE) {
             $this->RegisterVariableFloat('yearrainin', $this->Translate('Year Rain'), '~Rainfall', $this->_getPosition());
             $this->RegisterVariableFloat('totalrainin', $this->Translate('Total Rain'), '~Rainfall', $this->_getPosition());
             $this->RegisterVariableFloat('heatindex', $this->Translate('heat index'), '', $this->_getPosition());
@@ -128,8 +139,7 @@ class WeatherStation extends IPSModule
     private function ValidateConfiguration()
     {
         $model = $this->ReadPropertyInteger('model');
-        if($model == 2 || $model == 3)
-        {
+        if ($model == self::ELV_WS980WiFi || $model == self::Froggit_WH4000SE) {
             $this->SetUpdateIntervallData();
         }
         $mac = $this->ReadPropertyString('MAC');
@@ -141,7 +151,7 @@ class WeatherStation extends IPSModule
             $this->SetUpdateIntervallWeathercloud();
             $this->SetUpdateIntervallWeatherbug();
             $this->SetUpdateIntervallAmbientWeather();
-            $this->SetStatus(102);
+            $this->SetStatus(IS_ACTIVE);
         }
     }
 
@@ -196,6 +206,7 @@ class WeatherStation extends IPSModule
     }
 
     /** Find WiFi Weather Station (UDP Broadcast)
+     *
      * @param string $ip
      * @param int    $port
      *
@@ -203,9 +214,9 @@ class WeatherStation extends IPSModule
      */
     public function FindStation(string $ip = '255.255.255.255', int $port = 46000)
     {
-        $name = '';
+        $name    = '';
         $address = '';
-        $mac = '';
+        $mac     = '';
 
         // send command {0xff, 0xff, 0x12, 0x00, 0x04, 0x16}
         $cmd = chr(0xFF) . chr(0xFF) . chr(0x12) . chr(0x00) . chr(0x04) . chr(0x16);
@@ -219,15 +230,14 @@ class WeatherStation extends IPSModule
         // HexDump($buf);
         socket_close($sock);
         // get data
-        $format =
-            'x5/' .        // Get the first 2 bytes
-            'C6MAC/' .     // Get the next 6 byte
-            'C4IP/' .      // Get the next 4 byte
-            'n1PORT/' .    // Get the next 2 byte
-            'x1/' .        // Get the next 1 byte
-            'A20NAME/' .   // Get the next 20 byte
-            'x1';          // Get the next 1 byte
-        $array = unpack($format, $buf);
+        $format = 'x5/' .        // Get the first 2 bytes
+                  'C6MAC/' .     // Get the next 6 byte
+                  'C4IP/' .      // Get the next 4 byte
+                  'n1PORT/' .    // Get the next 2 byte
+                  'x1/' .        // Get the next 1 byte
+                  'A20NAME/' .   // Get the next 20 byte
+                  'x1';          // Get the next 1 byte
+        $array  = unpack($format, $buf);
         $this->SendDebug('Weatherstation Payload', json_encode($array), 0);
         if (isset($array['NAME'])) {
             $name = $array['NAME'];
@@ -237,7 +247,9 @@ class WeatherStation extends IPSModule
             $this->WriteAttributeString('weatherstation_name', $name);
         }
         if (isset($array['MAC1'])) {
-            $mac = dechex($array['MAC1']) . ':' . dechex($array['MAC2']) . ':' . dechex($array['MAC3']) . ':' . dechex($array['MAC4']) . ':' . dechex($array['MAC5']) . ':' . dechex($array['MAC6']);
+            $mac = dechex($array['MAC1']) . ':' . dechex($array['MAC2']) . ':' . dechex($array['MAC3']) . ':' . dechex($array['MAC4']) . ':' . dechex(
+                    $array['MAC5']
+                ) . ':' . dechex($array['MAC6']);
             $this->SendDebug('Weatherstation mac', $mac, 0);
         }
         if ($mac != '') {
@@ -262,25 +274,25 @@ class WeatherStation extends IPSModule
 
     public function GetWeatherStationAttributes()
     {
-        $name = $this->ReadAttributeString('weatherstation_name');
-        $mac = $this->ReadAttributeString('weatherstation_mac');
+        $name    = $this->ReadAttributeString('weatherstation_name');
+        $mac     = $this->ReadAttributeString('weatherstation_mac');
         $address = $this->ReadAttributeString('weatherstation_address');
-        $port = $this->ReadAttributeInteger('weatherstation_port');
+        $port    = $this->ReadAttributeInteger('weatherstation_port');
         return ['name' => $name, 'mac' => $mac, 'address' => $address, 'port' => $port];
     }
 
     /** Get Version
+     *
      * @return string
      */
     public function GetVersion()
     {
         // TCP Socket
-        $ip = $this->ReadAttributeString('weatherstation_address');
+        $ip   = $this->ReadAttributeString('weatherstation_address');
         $name = '';
-        if($ip != '')
-        {
+        if ($ip != '') {
             $port = $this->ReadAttributeInteger('weatherstation_port');
-            $str=chr(0xFF) . chr(0xFF) . chr(0x50) . chr(0x03) . chr(0x53);
+            $str  = chr(0xFF) . chr(0xFF) . chr(0x50) . chr(0x03) . chr(0x53);
             $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
             if ($sock === false) {
@@ -298,11 +310,10 @@ class WeatherStation extends IPSModule
             }
             socket_close($sock);
 
-            $format =
-                '@5/' .       // Override the first 5 bytes
-                'A17Name';    // Get the next 17 byte
-            $array = unpack($format, $buf);
-            $name =  $array['Name'];
+            $format = '@5/' .       // Override the first 5 bytes
+                      'A17Name';    // Get the next 17 byte
+            $array  = unpack($format, $buf);
+            $name   = $array['Name'];
         }
         return $name;
     }
@@ -310,12 +321,11 @@ class WeatherStation extends IPSModule
     public function GetData()
     {
         // TCP Socket
-        $ip = $this->ReadAttributeString('weatherstation_address');
+        $ip    = $this->ReadAttributeString('weatherstation_address');
         $array = [];
-        if($ip != '')
-        {
+        if ($ip != '') {
             $port = $this->ReadAttributeInteger('weatherstation_port');
-            $str=chr(0xFF) . chr(0xFF) . chr(0x0B) . chr(0x00) . chr(0x06) . chr(0x04) . chr(0x04) . chr(0x19);
+            $str  = chr(0xFF) . chr(0xFF) . chr(0x0B) . chr(0x00) . chr(0x06) . chr(0x04) . chr(0x04) . chr(0x19);
             $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
             if ($sock === false) {
@@ -333,58 +343,67 @@ class WeatherStation extends IPSModule
             }
             socket_close($sock);
             $this->hex_dump($buf);
-            $format =
-                'x7/' .                 // Override first 7 bytes
-                'n1Innentemperatur/' .  // Get the next 2 bytes
-                'x1/' .                 // Override 1 byte
-                'n1Außentemperatur/' .  // Get the next 2 bytes
-                'x1/' .                 // Override 1 byte
-                'n1Taupunkt/' .         // Get the next 2 bytes
-                'x1/' .                 // Override 1 byte
-                'n1Gefuehlt/' .         // Get the next 2 bytes
-                'x1/' .                 // Override 1 byte
-                'n1Hitze/' .            // Get the next 2 bytes
-                'x1/' .                 // Override 1 byte
-                'C1Innenfeuchte/' .     // Get the next 1 byte
-                'x1/' .                 // Override 1 byte
-                'C1Aussenfeuchte/' .    // Get the next 1 byte
-                'x1/' .                 // Override 1 byte
-                'n1AbsDruck/' .         // Get the next 2 bytes
-                'x1/' .                 // Override 1 byte
-                'n1RelDruck/' .         // Get the next 2 bytes
-                'x1/' .                 // Override 1 byte
-                'n1Windrichtung/' .     // Get the next 2 bytes
-                'x1/' .                 // Override 1 byte
-                'n1Windspeed/' .        // Get the next 2 bytes
-                'x1/' .                 // Override 1 byte
-                'n1Windboe/' .          // Get the next 2 bytes
-                'x1/' .                 // Override 1 byte
-                'N1RegenH/' .           // Get the next 4 bytes
-                'x1/' .                 // Override 1 byte
-                'N1RegenD/' .           // Get the next 4 bytes
-                'x1/' .                 // Override 1 byte
-                'N1RegenW/' .           // Get the next 4 bytes
-                'x1/' .                 // Override 1 byte
-                'N1RegenM/' .           // Get the next 4 bytes
-                'x1/' .                 // Override 1 byte
-                'N1RegenY/' .           // Get the next 4 bytes
-                'x1/' .                 // Override 1 byte
-                'N1RegenS/' .           // Get the next 4 bytes
-                'x1/' .                 // Override 1 byte
-                'N1Licht/' .            // Get the next 4 bytes
-                'x1/' .                 // Override 1 byte
-                'n1UvRaw/' .            // Get the next 2 bytes
-                'x1/' .                 // Override 1 byte
-                'C1UvIdxRaw';           // Get the next 2 bytes
+            $format = 'x7/' .                 // Override first 7 bytes
+                      'n1Innentemperatur/' .  // Get the next 2 bytes
+                      'x1/' .                 // Override 1 byte
+                      'n1Außentemperatur/' .  // Get the next 2 bytes
+                      'x1/' .                 // Override 1 byte
+                      'n1Taupunkt/' .         // Get the next 2 bytes
+                      'x1/' .                 // Override 1 byte
+                      'n1Gefuehlt/' .         // Get the next 2 bytes
+                      'x1/' .                 // Override 1 byte
+                      'n1Hitze/' .            // Get the next 2 bytes
+                      'x1/' .                 // Override 1 byte
+                      'C1Innenfeuchte/' .     // Get the next 1 byte
+                      'x1/' .                 // Override 1 byte
+                      'C1Aussenfeuchte/' .    // Get the next 1 byte
+                      'x1/' .                 // Override 1 byte
+                      'n1AbsDruck/' .         // Get the next 2 bytes
+                      'x1/' .                 // Override 1 byte
+                      'n1RelDruck/' .         // Get the next 2 bytes
+                      'x1/' .                 // Override 1 byte
+                      'n1Windrichtung/' .     // Get the next 2 bytes
+                      'x1/' .                 // Override 1 byte
+                      'n1Windspeed/' .        // Get the next 2 bytes
+                      'x1/' .                 // Override 1 byte
+                      'n1Windboe/' .          // Get the next 2 bytes
+                      'x1/' .                 // Override 1 byte
+                      'N1RegenH/' .           // Get the next 4 bytes
+                      'x1/' .                 // Override 1 byte
+                      'N1RegenD/' .           // Get the next 4 bytes
+                      'x1/' .                 // Override 1 byte
+                      'N1RegenW/' .           // Get the next 4 bytes
+                      'x1/' .                 // Override 1 byte
+                      'N1RegenM/' .           // Get the next 4 bytes
+                      'x1/' .                 // Override 1 byte
+                      'N1RegenY/' .           // Get the next 4 bytes
+                      'x1/' .                 // Override 1 byte
+                      'N1RegenS/' .           // Get the next 4 bytes
+                      'x1/' .                 // Override 1 byte
+                      'N1Licht/' .            // Get the next 4 bytes
+                      'x1/' .                 // Override 1 byte
+                      'n1UvRaw/' .            // Get the next 2 bytes
+                      'x1/' .                 // Override 1 byte
+                      'C1UvIdxRaw';           // Get the next 2 bytes
 
             $array = unpack($format, $buf);
-            if($array['Taupunkt'] >= pow(2, 15)) $array['Taupunkt'] -= pow(2, 16);
-            if($array['Innentemperatur'] >= pow(2, 15)) $array['Innentemperatur'] -= pow(2, 16);
-            if($array['Aussentemperatur'] >= pow(2, 15)) $array['Aussentemperatur'] -= pow(2, 16);
-            if($array['Gefuehlte'] >= pow(2, 15)) $array['Gefuehlte'] -= pow(2, 16);
-            if($array['Hitze'] >= pow(2, 15)) $array['Hitze'] -= pow(2, 16);
-            $temp_unit = $this->ReadPropertyInteger('temp_unit');
-            $speed_unit = $this->ReadPropertyInteger('speed_unit');
+            if ($array['Taupunkt'] >= pow(2, 15)) {
+                $array['Taupunkt'] -= pow(2, 16);
+            }
+            if ($array['Innentemperatur'] >= pow(2, 15)) {
+                $array['Innentemperatur'] -= pow(2, 16);
+            }
+            if ($array['Aussentemperatur'] >= pow(2, 15)) {
+                $array['Aussentemperatur'] -= pow(2, 16);
+            }
+            if ($array['Gefuehlte'] >= pow(2, 15)) {
+                $array['Gefuehlte'] -= pow(2, 16);
+            }
+            if ($array['Hitze'] >= pow(2, 15)) {
+                $array['Hitze'] -= pow(2, 16);
+            }
+            $temp_unit     = $this->ReadPropertyInteger('temp_unit');
+            $speed_unit    = $this->ReadPropertyInteger('speed_unit');
             $pressure_unit = $this->ReadPropertyInteger('pressure_unit');
 
             if (isset($array['Innentemperatur'])) {
@@ -434,9 +453,9 @@ class WeatherStation extends IPSModule
                 $this->SetValue('Outdoor_Humidity', floatval($humidity));
             }
             if (isset($array['Windspeed'])) {
-                $windspeed = floatval(($array['Windspeed'] /10.) * 3.6);
+                $windspeed = floatval(($array['Windspeed'] / 10.) * 3.6);
                 $this->SendDebug('Weatherstation:', 'windspeed: ' . $windspeed, 0);
-                if ($speed_unit == 1) {
+                if ($speed_unit == self::kmh) {
                     $this->SetValue('Windspeed_km', $this->MilesToKilometer($windspeed));
                     $this->SetValue('Windspeed_ms', $this->MPHToMS($windspeed));
                 } else {
@@ -445,9 +464,9 @@ class WeatherStation extends IPSModule
                 }
             }
             if (isset($array['Windboe'])) {
-                $windgust = floatval(($array['Windboe'] /10.) * 3.6);
+                $windgust = floatval(($array['Windboe'] / 10.) * 3.6);
                 $this->SendDebug('Weatherstation:', 'windgust: ' . $windgust, 0);
-                if ($speed_unit == 1) {
+                if ($speed_unit == self::kmh) {
                     $this->SetValue('Windgust', $this->MilesToKilometer($windgust));
                 } else {
                     $this->SetValue('Windgust', $windgust);
@@ -555,24 +574,27 @@ class WeatherStation extends IPSModule
         return $array;
     }
 
-    private function hex_dump($data, $newline="\n")
+    private function hex_dump($data, $newline = "\n")
     {
         static $from = '';
         static $to = '';
         static $width = 16; // number of bytes per line
         static $pad = '.'; // padding for non-visible characters
 
-        if ($from==='') {
-            for ($i=0; $i<=0xFF; $i++) {
+        if ($from === '') {
+            for ($i = 0; $i <= 0xFF; $i++) {
                 $from .= chr($i);
-                $to .= ($i >= 0x20 && $i <= 0x7E) ? chr($i) : $pad;
+                $to   .= ($i >= 0x20 && $i <= 0x7E) ? chr($i) : $pad;
             }
         }
-        $hex = str_split(bin2hex($data), $width*2);
-        $chars = str_split(strtr($data, $from, $to), $width);
+        $hex    = str_split(bin2hex($data), $width * 2);
+        $chars  = str_split(strtr($data, $from, $to), $width);
         $offset = 0;
         foreach ($hex as $i => $line) {
-            $this->SendDebug('Weatherstation HexSocket', sprintf('%06X', $offset) . ' : ' . strtoupper(implode(' ', str_split($line, 2))) . ' [' . $chars[$i] . ']' . $newline, 0);
+            $this->SendDebug(
+                'Weatherstation HexSocket',
+                sprintf('%06X', $offset) . ' : ' . strtoupper(implode(' ', str_split($line, 2))) . ' [' . $chars[$i] . ']' . $newline, 0
+            );
             $offset += $width;
         }
     }
@@ -637,19 +659,19 @@ class WeatherStation extends IPSModule
 
     protected function Pressure(float $pressure, float $temperature)
     {
-        $pascal = $pressure / 0.02952998751;
+        $pascal   = $pressure / 0.02952998751;
         $altitude = $this->ReadPropertyInteger('altitude_above_sea_level');
 
         $g0 = 9.80665;                                         // Normwert der Fallbeschleunigung
-        $R = 287.05;                                          // Gaskonstante trockener Luft
-        $T = 273.15;                                          // 0°C in Kelvin
+        $R  = 287.05;                                          // Gaskonstante trockener Luft
+        $T  = 273.15;                                          // 0°C in Kelvin
         $Ch = 0.12;                                            // Beiwert zu E
         if ($temperature < 9.1) {
             $E = 5.6402 * (-0.0916 + exp(0.06 * $temperature));        // Dampfdruck des Wasserdampfanteils bei t < 9.1°C
         } else {
             $E = 18.2194 * (1.0463 - exp(-0.0666 * $temperature));    // Dampfdruck des Wasserdampfanteils bei t >= 9.1°C
         }
-        $a = 0.0065;                                          // vertikaler Temperaturgradient
+        $a  = 0.0065;                                          // vertikaler Temperaturgradient
         $xp = $altitude * $g0 / ($R * ($T + $temperature + $Ch * $E + $a * $altitude / 2)); // Exponent für Formel
         $p0 = $pascal * exp($xp);                             // Formel für den NN-bezogenen Luftdruck laut Wikipedia
         return $p0;
@@ -663,7 +685,8 @@ class WeatherStation extends IPSModule
 
     protected function SendToIO(string $payload)
     {
-        $result = $this->SendDataToParent(json_encode(['DataID' => '{C8792760-65CF-4C53-B5C7-A30FCC84FEFE}', 'Buffer' => $payload])); // TX Server Socket
+        $result =
+            $this->SendDataToParent(json_encode(['DataID' => '{C8792760-65CF-4C53-B5C7-A30FCC84FEFE}', 'Buffer' => $payload])); // TX Server Socket
         return $result;
     }
 
@@ -688,25 +711,21 @@ class WeatherStation extends IPSModule
     {
         $payload = substr($payloadraw, 4, strlen($payloadraw) - 4);
         $address = $this->ReadAttributeString('weatherstation_address');
-        if($address == '')
-        {
+        if ($address == '') {
             $address = '192.168.1.1';
         }
         $this->SendDebug('Weatherstation payload:', $payload, 0);
         $first_char = substr($payload, 0, 1);
-        if($first_char == '/')
-        {
+        if ($first_char == '/') {
             $url = 'http://' . $address . $payload;
-        }
-        else
-        {
+        } else {
             $url = 'http://' . $address . '/' . $payload;
         }
         $this->SendDebug('Weatherstation:', $url, 0);
         $query = parse_url($url, PHP_URL_QUERY);
         parse_str($query, $data);
-        $temp_unit = $this->ReadPropertyInteger('temp_unit');
-        $speed_unit = $this->ReadPropertyInteger('speed_unit');
+        $temp_unit     = $this->ReadPropertyInteger('temp_unit');
+        $speed_unit    = $this->ReadPropertyInteger('speed_unit');
         $pressure_unit = $this->ReadPropertyInteger('pressure_unit');
         if (isset($data['indoortempf'])) {
             $indoor_temperature = floatval($data['indoortempf']);
@@ -757,7 +776,7 @@ class WeatherStation extends IPSModule
         if (isset($data['windspeedmph'])) {
             $windspeed = floatval($data['windspeedmph']);
             $this->SendDebug('Weatherstation:', 'windspeed: ' . $windspeed, 0);
-            if ($speed_unit == 1) {
+            if ($speed_unit == self::kmh) {
                 $this->SetValue('Windspeed_km', $this->MilesToKilometer($windspeed));
                 $this->SetValue('Windspeed_ms', $this->MPHToMS($windspeed));
             } else {
@@ -768,8 +787,8 @@ class WeatherStation extends IPSModule
         if (isset($data['windgustmph'])) {
             $windgust = floatval($data['windgustmph']);
             $this->SendDebug('Weatherstation:', 'windgust: ' . $windgust, 0);
-            if ($speed_unit == 1) {
-                $this->SetValue('Windgust', $this->MilesToKilometer($windgust));
+            if ($speed_unit == self::kmh) {
+                $this->SetValue('Windgust', $this->MPHToMS($windgust));
             } else {
                 $this->SetValue('Windgust', $windgust);
             }
@@ -782,7 +801,7 @@ class WeatherStation extends IPSModule
         if (isset($data['absbaromin'])) {
             $absbaromin = floatval($data['absbaromin']);
             $this->SendDebug('Weatherstation:', 'abs barometer min: ' . $absbaromin, 0);
-            if ($pressure_unit == 1) {
+            if ($pressure_unit == self::pascal) {
                 $this->SetValue('absbaromin', $this->Pressure_absolute($absbaromin));
             } else {
                 $this->SetValue('absbaromin', $absbaromin);
@@ -791,7 +810,7 @@ class WeatherStation extends IPSModule
         if (isset($data['baromin'])) {
             $baromin = floatval($data['baromin']);
             $this->SendDebug('Weatherstation:', 'barometer min: ' . $baromin, 0);
-            if ($pressure_unit == 1) {
+            if ($pressure_unit == self::pascal) {
                 $this->SetValue('baromin', $this->Pressure($baromin, $this->FahrenheitToCelsius($temperature)));
             } else {
                 $this->SetValue('baromin', $baromin);
@@ -856,25 +875,18 @@ class WeatherStation extends IPSModule
 
     public function Update_Wunderground()
     {
-        $wunderground_url = 'https://weatherstation.wunderground.com/weatherstation/updateweatherstation.php';
-        $wunderground_station_id = $this->ReadPropertyString('Wunderground_Station_ID');
+        $wunderground_url              = 'https://weatherstation.wunderground.com/weatherstation/updateweatherstation.php';
+        $wunderground_station_id       = $this->ReadPropertyString('Wunderground_Station_ID');
         $wunderground_station_password = $this->ReadPropertyString('Wunderground_Station_Password');
         // get data for wunderground
 
         $param = $this->GetParametersWunderground();
 
-        $url = $wunderground_url . '?ID=' . $wunderground_station_id . '&PASSWORD=' . $wunderground_station_password . '&action=updateraw' . $param;
-        $this->SendDebug('Weatherstation:', 'http-get: url=' . $url, 0);
-        $time_start = microtime(true);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $wstatus = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        $duration = floor((microtime(true) - $time_start) * 100) / 100;
-        $this->SendDebug('Weatherstation:', ' => httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+        $url      =
+            $wunderground_url . '?ID=' . $wunderground_station_id . '&PASSWORD=' . $wunderground_station_password . '&action=updateraw' . $param;
+        $wstatus  = '';
+        $httpcode = '';
+        $this->SendData($url, $wstatus, $httpcode);
         // $do_abort = false;
         if ($httpcode != 200) {
             $err = " => got http-code $httpcode from wunderground";
@@ -917,7 +929,7 @@ class WeatherStation extends IPSModule
         $param .= '&monthlyrainin=' . str_replace(',', '.', strval($this->RainToInch(GetValueFloat($this->GetIDForIdent('monthlyrainin')))));
         $param .= '&solarradiation=' . str_replace(',', '.', GetValue($this->GetIDForIdent('solarradiation')));
         $param .= '&UV=' . str_replace(',', '.', GetValue($this->GetIDForIdent('UV')));
-        $param .= '&softwaretype=EasyWeatherV1.2.1';
+        $param .= '&softwaretype=' . GetValue($this->GetIDForIdent('Software_Type'));
         $param .= '&realtime=1';
         $param .= '&rtfreq=20';
         return $param;
@@ -927,21 +939,16 @@ class WeatherStation extends IPSModule
     {
         $weathercloud_url = 'http://api.weathercloud.net/v01/set';
 
-        $weathercloud_station_id = $this->ReadPropertyString('Weathercloud_ID');
+        $weathercloud_station_id       = $this->ReadPropertyString('Weathercloud_ID');
         $weathercloud_station_password = $this->ReadPropertyString('Weathercloud_Key');
 
         $url = $weathercloud_url . '?wid=' . $weathercloud_station_id . '&key=' . $weathercloud_station_password;
 
-        $param = $this->GetParametersWeathercloud();
-        $url = $url . $param;
-        $this->SendDebug('Weatherstation:', $url, 0);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        $param    = $this->GetParametersWeathercloud();
+        $url      = $url . $param;
+        $wstatus  = '';
+        $httpcode = '';
+        $this->SendData($url, $wstatus, $httpcode);
         if ($httpcode != 200) {
             $err = " => got http-code $httpcode from weathercloud";
             $this->SendDebug('Weatherstation:', $err, 0);
@@ -974,24 +981,31 @@ class WeatherStation extends IPSModule
         return $param;
     }
 
-    public function Update_AmbientWeatherCloud()
+    private function SendData($url, &$wstatus, &$httpcode)
     {
-        $ambient_weather_cloud_url = 'https://api.ambientweather.net:80/endpoint?';
-        $passkey = $this->ReadPropertyString('Ambient_Passkey');
-
-        $param = $this->GetParametersAmbientWeatherCloud();
-        $url = $ambient_weather_cloud_url . '?PASSKEY=' . $passkey . '&stationtype=WS-1600-IP' . $param;
         $this->SendDebug('Weatherstation:', 'http-get: url=' . $url, 0);
         $time_start = microtime(true);
-        $ch = curl_init();
+        $duration   = floor((microtime(true) - $time_start) * 100) / 100;
+        $ch         = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $wstatus = curl_exec($ch);
+        $wstatus  = curl_exec($ch);
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        $duration = floor((microtime(true) - $time_start) * 100) / 100;
         $this->SendDebug('Weatherstation:', ' => httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+    }
+
+    public function Update_AmbientWeatherCloud()
+    {
+        $ambient_weather_cloud_url = 'https://api.ambientweather.net:80/endpoint?';
+        $passkey                   = $this->ReadPropertyString('Ambient_Passkey');
+
+        $param    = $this->GetParametersAmbientWeatherCloud();
+        $url      = $ambient_weather_cloud_url . '?PASSKEY=' . $passkey . '&stationtype=WS-1600-IP' . $param;
+        $wstatus  = '';
+        $httpcode = '';
+        $this->SendData($url, $wstatus, $httpcode);
         if ($httpcode != 200) {
             $err = " => got http-code $httpcode from ambient weather";
             $this->SendDebug('Weatherstation:', $err, 0);
@@ -1040,24 +1054,24 @@ class WeatherStation extends IPSModule
 
     public function AlexaData()
     {
-        $data = [];
-        $data['Indoor_Temp'] = GetValue($this->GetIDForIdent('Indoor_Temp'));
-        $data['Outdoor_Temp'] = GetValue($this->GetIDForIdent('Outdoor_Temp'));
-        $data['Dewpoint'] = GetValue($this->GetIDForIdent('Dewpoint'));
-        $data['Windchill'] = GetValue($this->GetIDForIdent('Windchill'));
-        $data['Indoor_Humidity'] = GetValue($this->GetIDForIdent('Indoor_Humidity'));
+        $data                     = [];
+        $data['Indoor_Temp']      = GetValue($this->GetIDForIdent('Indoor_Temp'));
+        $data['Outdoor_Temp']     = GetValue($this->GetIDForIdent('Outdoor_Temp'));
+        $data['Dewpoint']         = GetValue($this->GetIDForIdent('Dewpoint'));
+        $data['Windchill']        = GetValue($this->GetIDForIdent('Windchill'));
+        $data['Indoor_Humidity']  = GetValue($this->GetIDForIdent('Indoor_Humidity'));
         $data['Outdoor_Humidity'] = GetValue($this->GetIDForIdent('Outdoor_Humidity'));
-        $data['Windspeed_km'] = GetValue($this->GetIDForIdent('Windspeed_km'));
-        $data['Windgust'] = GetValue($this->GetIDForIdent('Windgust'));
-        $data['Wind_Direction'] = GetValue($this->GetIDForIdent('Wind_Direction'));
-        $data['absbaromin'] = GetValue($this->GetIDForIdent('absbaromin'));
-        $data['baromin'] = GetValue($this->GetIDForIdent('baromin'));
-        $data['rainin'] = GetValue($this->GetIDForIdent('rainin'));
-        $data['dailyrainin'] = GetValue($this->GetIDForIdent('dailyrainin'));
-        $data['weeklyrainin'] = GetValue($this->GetIDForIdent('weeklyrainin'));
-        $data['monthlyrainin'] = GetValue($this->GetIDForIdent('monthlyrainin'));
-        $data['solarradiation'] = GetValue($this->GetIDForIdent('solarradiation'));
-        $data['UV'] = GetValue($this->GetIDForIdent('UV'));
+        $data['Windspeed_km']     = GetValue($this->GetIDForIdent('Windspeed_km'));
+        $data['Windgust']         = GetValue($this->GetIDForIdent('Windgust'));
+        $data['Wind_Direction']   = GetValue($this->GetIDForIdent('Wind_Direction'));
+        $data['absbaromin']       = GetValue($this->GetIDForIdent('absbaromin'));
+        $data['baromin']          = GetValue($this->GetIDForIdent('baromin'));
+        $data['rainin']           = GetValue($this->GetIDForIdent('rainin'));
+        $data['dailyrainin']      = GetValue($this->GetIDForIdent('dailyrainin'));
+        $data['weeklyrainin']     = GetValue($this->GetIDForIdent('weeklyrainin'));
+        $data['monthlyrainin']    = GetValue($this->GetIDForIdent('monthlyrainin'));
+        $data['solarradiation']   = GetValue($this->GetIDForIdent('solarradiation'));
+        $data['UV']               = GetValue($this->GetIDForIdent('UV'));
 
         return $data;
     }
@@ -1101,8 +1115,9 @@ class WeatherStation extends IPSModule
             IPS_CreateVariableProfile($Name, $Vartype); // 0 boolean, 1 int, 2 float, 3 string,
         } else {
             $profile = IPS_GetVariableProfile($Name);
-            if ($profile['ProfileType'] != $Vartype)
+            if ($profile['ProfileType'] != $Vartype) {
                 $this->SendDebug('Weatherstation:', 'Variable profile type does not match for profile ' . $Name, 0);
+            }
         }
 
         IPS_SetVariableProfileIcon($Name, $Icon);
@@ -1160,11 +1175,12 @@ class WeatherStation extends IPSModule
     public function GetConfigurationForm()
     {
         // return current form
-        return json_encode([
-            'elements' => $this->FormHead(),
-            'actions'  => $this->FormActions(),
-            'status'   => $this->FormStatus()
-        ]);
+        return json_encode(
+            [
+                'elements' => $this->FormHead(),
+                'actions'  => $this->FormActions(),
+                'status'   => $this->FormStatus()]
+        );
     }
 
     /**
@@ -1175,7 +1191,7 @@ class WeatherStation extends IPSModule
     protected function FormHead()
     {
         // $altidude = $this->altitude_above_sea_level();
-        $form = [
+        $form    = [
             [
                 'name'    => 'model',
                 'type'    => 'Select',
@@ -1183,271 +1199,203 @@ class WeatherStation extends IPSModule
                 'options' => [
                     [
                         'label' => 'Please select model',
-                        'value' => 0
-                    ],
+                        'value' => 0],
                     [
                         'label' => 'Sainlogic (Firmware 1.3.8 or above)',
-                        'value' => 1
-                    ],
+                        'value' => self::Sainlogic],
                     [
                         'label' => 'ELV WS980WiFi',
-                        'value' => 2
-                    ],
+                        'value' => self::ELV_WS980WiFi],
                     [
                         'label' => 'Froggit WH4000SE',
-                        'value' => 3
-                    ]
-                ]
-            ]
-        ];
+                        'value' => self::Froggit_WH4000SE]]]];
         $address = $this->ReadAttributeString('weatherstation_address');
         if ($address != '') {
             $form = array_merge_recursive(
-                $form,
-                [
-                    [
-                        'type'     => 'List',
-                        'name'     => 'weatherstation_info',
-                        'caption'  => 'Weatherstation Info',
-                        'rowCount' => 2,
-                        'add'      => false,
-                        'delete'   => false,
-                        'sort'     => [
-                            'column'    => 'name',
-                            'direction' => 'ascending'
-                        ],
-                        'columns' => [
-                            [
-                                'name'    => 'name',
-                                'caption' => 'name',
-                                'width'   => 'auto',
-                                'visible' => true
-                            ],
-                            [
-                                'name'    => 'mac',
-                                'caption' => 'MAC',
-                                'width'   => '150px',
-                            ],
-                            [
-                                'name'    => 'address',
-                                'caption' => 'address',
-                                'width'   => '150px',
-                                'edit'    => [
-                                    'type' => 'ValidationTextBox'
-                                ]
-                            ],
-                            [
-                                'name'    => 'port',
-                                'caption' => 'port',
-                                'width'   => '150px'
-                            ]
-                        ],
-                        'values' => [
-                            [
-                                'name'    => $this->ReadAttributeString('weatherstation_name'),
-                                'mac'     => $this->ReadAttributeString('weatherstation_mac'),
-                                'address' => $this->ReadAttributeString('weatherstation_address'),
-                                'port'    => $this->ReadAttributeInteger('weatherstation_port')
-                            ]
-                        ]
-                    ]
-                ]
+                $form, [
+                         [
+                             'type'     => 'List',
+                             'name'     => 'weatherstation_info',
+                             'caption'  => 'Weatherstation Info',
+                             'rowCount' => 2,
+                             'add'      => false,
+                             'delete'   => false,
+                             'sort'     => [
+                                 'column'    => 'name',
+                                 'direction' => 'ascending'],
+                             'columns'  => [
+                                 [
+                                     'name'    => 'name',
+                                     'caption' => 'name',
+                                     'width'   => 'auto',
+                                     'visible' => true],
+                                 [
+                                     'name'    => 'mac',
+                                     'caption' => 'MAC',
+                                     'width'   => '150px',],
+                                 [
+                                     'name'    => 'address',
+                                     'caption' => 'address',
+                                     'width'   => '150px',
+                                     'edit'    => [
+                                         'type' => 'ValidationTextBox']],
+                                 [
+                                     'name'    => 'port',
+                                     'caption' => 'port',
+                                     'width'   => '150px']],
+                             'values'   => [
+                                 [
+                                     'name'    => $this->ReadAttributeString('weatherstation_name'),
+                                     'mac'     => $this->ReadAttributeString('weatherstation_mac'),
+                                     'address' => $this->ReadAttributeString('weatherstation_address'),
+                                     'port'    => $this->ReadAttributeInteger('weatherstation_port')]]]]
             );
-        }
-        else
-        {
+        } else {
             $form = array_merge_recursive(
-                $form,
-                [
-                    [
-                        'type'  => 'Label',
-                        'label' => 'Find Weatherstation'
-                    ],
-                    [
-                        'type'    => 'Button',
-                        'label'   => 'Find Weatherstation',
-                        'onClick' => 'WeatherStation_FindStation($id, "255.255.255.255", 46000);'
-                    ]
-                ]
+                $form, [
+                         [
+                             'type'  => 'Label',
+                             'label' => 'Find Weatherstation'],
+                         [
+                             'type'    => 'Button',
+                             'label'   => 'Find Weatherstation',
+                             'onClick' => 'WeatherStation_FindStation($id, "255.255.255.255", 46000);']]
             );
         }
         $form = array_merge_recursive(
-            $form,
-            [
-                [
-                    'type'  => 'Label',
-                    'label' => 'Altitude above sea level for the location of the weatherstation'
-                ],
-                /*
-                [
-                    'type' => 'Label',
-                    'label' => 'Altitude from the weather stationabove '.$altidude.' m'
-                ],
-                */
-                [
-                    'name'    => 'altitude_above_sea_level',
-                    'type'    => 'NumberSpinner',
-                    'caption' => 'altitude (m)'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'Data for Ambient Weather'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'MAC address'
-                ],
-                [
-                    'name'    => 'MAC',
-                    'type'    => 'ValidationTextBox',
-                    'caption' => 'MAC'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'Ambient Weather Passkey'
-                ],
-                [
-                    'name'    => 'Ambient_Passkey',
-                    'type'    => 'ValidationTextBox',
-                    'caption' => 'Passkey'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'Wunderground Station ID'
-                ],
-                [
-                    'name'    => 'Wunderground_Station_ID',
-                    'type'    => 'ValidationTextBox',
-                    'caption' => 'Station ID'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'Wunderground Station Password'
-                ],
-                [
-                    'name'    => 'Wunderground_Station_Password',
-                    'type'    => 'ValidationTextBox',
-                    'caption' => 'Station Password'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'Weathercloud ID'
-                ],
-                [
-                    'name'    => 'Weathercloud_ID',
-                    'type'    => 'ValidationTextBox',
-                    'caption' => 'Weathercloud ID'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'Weathercloud Key'
-                ],
-                [
-                    'name'    => 'Weathercloud_Key',
-                    'type'    => 'ValidationTextBox',
-                    'caption' => 'Weathercloud Key'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'Update Interval Wunderground (seconds)'
-                ],
-                [
-                    'name'    => 'UpdateInterval_Wunderground',
-                    'type'    => 'IntervalBox',
-                    'caption' => 'Seconds'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'Update Interval Weathercloud (minutes)'
-                ],
-                [
-                    'name'    => 'UpdateInterval_Weathercloud',
-                    'type'    => 'IntervalBox',
-                    'caption' => 'Minutes'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'Update Interval Weatherbug (minutes)'
-                ],
-                [
-                    'name'    => 'UpdateInterval_Weatherbug',
-                    'type'    => 'IntervalBox',
-                    'caption' => 'Minutes'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'Update Interval Ambient Weather (seconds)'
-                ],
-                [
-                    'name'    => 'UpdateInterval_AmbientWeather',
-                    'type'    => 'IntervalBox',
-                    'caption' => 'Seconds'
-                ],
-                [
-                    'type'  => 'Label',
-                    'label' => 'Select units:'
-                ],
-                [
-                    'name'    => 'temp_unit',
-                    'type'    => 'Select',
-                    'caption' => 'Temperature',
-                    'options' => [
-                        [
-                            'label' => 'Celius °C',
-                            'value' => 1
-                        ],
-                        [
-                            'label' => 'Fahrenheit F',
-                            'value' => 2
-                        ]
-                    ]
-                ],
-                [
-                    'name'    => 'speed_unit',
-                    'type'    => 'Select',
-                    'caption' => 'Wind Speed',
-                    'options' => [
-                        [
-                            'label' => 'kmh',
-                            'value' => 1
-                        ],
-                        [
-                            'label' => 'mph',
-                            'value' => 2
-                        ]
-                    ]
-                ],
-                [
-                    'name'    => 'pressure_unit',
-                    'type'    => 'Select',
-                    'caption' => 'Air Pressure',
-                    'options' => [
-                        [
-                            'label' => 'pascal',
-                            'value' => 1
-                        ],
-                        [
-                            'label' => 'bar',
-                            'value' => 2
-                        ]
-                    ]
-                ],
-                [
-                    'name'    => 'rain_unit',
-                    'type'    => 'Select',
-                    'caption' => 'Rain',
-                    'options' => [
-                        [
-                            'label' => 'mm',
-                            'value' => 1
-                        ],
-                        [
-                            'label' => 'inch',
-                            'value' => 2
-                        ]
-                    ]
-                ]
-            ]
+            $form, [
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Altitude above sea level for the location of the weatherstation'],
+                     /*
+                     [
+                         'type' => 'Label',
+                         'label' => 'Altitude from the weather stationabove '.$altidude.' m'
+                     ],
+                     */ [
+                         'name'    => 'altitude_above_sea_level',
+                         'type'    => 'NumberSpinner',
+                         'caption' => 'altitude (m)'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Data for Ambient Weather'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'MAC address'],
+                     [
+                         'name'    => 'MAC',
+                         'type'    => 'ValidationTextBox',
+                         'caption' => 'MAC'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Ambient Weather Passkey'],
+                     [
+                         'name'    => 'Ambient_Passkey',
+                         'type'    => 'ValidationTextBox',
+                         'caption' => 'Passkey'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Wunderground Station ID'],
+                     [
+                         'name'    => 'Wunderground_Station_ID',
+                         'type'    => 'ValidationTextBox',
+                         'caption' => 'Station ID'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Wunderground Station Password'],
+                     [
+                         'name'    => 'Wunderground_Station_Password',
+                         'type'    => 'ValidationTextBox',
+                         'caption' => 'Station Password'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Weathercloud ID'],
+                     [
+                         'name'    => 'Weathercloud_ID',
+                         'type'    => 'ValidationTextBox',
+                         'caption' => 'Weathercloud ID'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Weathercloud Key'],
+                     [
+                         'name'    => 'Weathercloud_Key',
+                         'type'    => 'ValidationTextBox',
+                         'caption' => 'Weathercloud Key'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Update Interval Wunderground (seconds)'],
+                     [
+                         'name'    => 'UpdateInterval_Wunderground',
+                         'type'    => 'IntervalBox',
+                         'caption' => 'Seconds'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Update Interval Weathercloud (minutes)'],
+                     [
+                         'name'    => 'UpdateInterval_Weathercloud',
+                         'type'    => 'IntervalBox',
+                         'caption' => 'Minutes'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Update Interval Weatherbug (minutes)'],
+                     [
+                         'name'    => 'UpdateInterval_Weatherbug',
+                         'type'    => 'IntervalBox',
+                         'caption' => 'Minutes'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Update Interval Ambient Weather (seconds)'],
+                     [
+                         'name'    => 'UpdateInterval_AmbientWeather',
+                         'type'    => 'IntervalBox',
+                         'caption' => 'Seconds'],
+                     [
+                         'type'  => 'Label',
+                         'label' => 'Select units:'],
+                     [
+                         'name'    => 'temp_unit',
+                         'type'    => 'Select',
+                         'caption' => 'Temperature',
+                         'options' => [
+                             [
+                                 'label' => 'Celsius °C',
+                                 'value' => self::Celsius],
+                             [
+                                 'label' => 'Fahrenheit F',
+                                 'value' => self::Fahrenheit]]],
+                     [
+                         'name'    => 'speed_unit',
+                         'type'    => 'Select',
+                         'caption' => 'Wind Speed',
+                         'options' => [
+                             [
+                                 'label' => 'kmh',
+                                 'value' => self::kmh],
+                             [
+                                 'label' => 'mph',
+                                 'value' => self::mph]]],
+                     [
+                         'name'    => 'pressure_unit',
+                         'type'    => 'Select',
+                         'caption' => 'Air Pressure',
+                         'options' => [
+                             [
+                                 'label' => 'pascal',
+                                 'value' => self::pascal],
+                             [
+                                 'label' => 'bar',
+                                 'value' => self::bar]]],
+                     [
+                         'name'    => 'rain_unit',
+                         'type'    => 'Select',
+                         'caption' => 'Rain',
+                         'options' => [
+                             [
+                                 'label' => 'mm',
+                                 'value' => self::mm],
+                             [
+                                 'label' => 'inch',
+                                 'value' => self::inch]]]]
         );
         return $form;
     }
@@ -1489,34 +1437,29 @@ class WeatherStation extends IPSModule
             [
                 'code'    => 101,
                 'icon'    => 'inactive',
-                'caption' => 'Creating instance.'
-            ],
+                'caption' => 'Creating instance.'],
             [
                 'code'    => 102,
                 'icon'    => 'active',
-                'caption' => 'Device created.'
-            ],
+                'caption' => 'Device created.'],
             [
                 'code'    => 104,
                 'icon'    => 'inactive',
-                'caption' => 'interface closed.'
-            ],
+                'caption' => 'interface closed.'],
             [
                 'code'    => 201,
                 'icon'    => 'error',
-                'caption' => 'MAC must not be empty'
-            ]
-        ];
+                'caption' => 'MAC must not be empty']];
 
         return $form;
     }
 
     protected function altitude_above_sea_level()
     {
-        $location = $this->getlocation();
-        $Latitude = $location['Latitude'];
+        $location  = $this->getlocation();
+        $Latitude  = $location['Latitude'];
         $Longitude = $location['Longitude'];
-        $altitude = $Latitude * $Longitude;
+        $altitude  = $Latitude * $Longitude;
         return $altitude;
     }
 
@@ -1526,11 +1469,11 @@ class WeatherStation extends IPSModule
         $LocationID = IPS_GetInstanceListByModuleID('{45E97A63-F870-408A-B259-2933F7EABF74}')[0];
         $ipsversion = $this->GetIPSVersion();
         if ($ipsversion == 5) {
-            $Location = json_decode(IPS_GetProperty($LocationID, 'Location'));
-            $Latitude = $Location->latitude;
+            $Location  = json_decode(IPS_GetProperty($LocationID, 'Location'));
+            $Latitude  = $Location->latitude;
             $Longitude = $Location->longitude;
         } else {
-            $Latitude = IPS_GetProperty($LocationID, 'Latitude');
+            $Latitude  = IPS_GetProperty($LocationID, 'Latitude');
             $Longitude = IPS_GetProperty($LocationID, 'Longitude');
         }
         $location = ['Latitude' => $Latitude, 'Longitude' => $Longitude];
