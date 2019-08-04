@@ -1026,7 +1026,7 @@ class WeatherStation extends IPSModule
         $param .= '&windgustmph=' . rawurlencode(strval($this->FormatFloat($this->MSToMPH(GetValueFloat($this->GetIDForIdent('Windgust'))))));
         // &maxdailygust=4.47
         $param .= '&tempf=' . rawurlencode(strval($this->CelsiusToFahrenheit(GetValueFloat($this->GetIDForIdent('Outdoor_Temp')))));
-        $param .= '&humidity=' . rawurlencode(GetValue($this->GetIDForIdent('Outdoor_Humidity')));
+        $param .= '&humidity=' . rawurlencode(strval(GetValue($this->GetIDForIdent('Outdoor_Humidity'))));
         // &hourlyrainin=0.00
         $param .= '&dailyrainin=' . rawurlencode(strval($this->FormatFloat(GetValue($this->GetIDForIdent('dailyrainin')))));
         $param .= '&weeklyrainin=' . rawurlencode(strval($this->FormatFloat(GetValue($this->GetIDForIdent('weeklyrainin')))));
