@@ -1021,28 +1021,28 @@ class WeatherStation extends IPSModule
     {
         $param = '&stationtype=WS-1600-IP';
         $param .= '&dateutc=' . rawurlencode(date('Y-m-d+G:i:s', time()));
-        $param .= '&winddir=' . rawurlencode(GetValue($this->GetIDForIdent('Wind_Direction')));
-        $param .= '&windspeedmph=' . rawurlencode($this->FormatFloat($this->MSToMPH(GetValueFloat($this->GetIDForIdent('Windspeed_ms')))));
-        $param .= '&windgustmph=' . rawurlencode($this->FormatFloat($this->MSToMPH(GetValueFloat($this->GetIDForIdent('Windgust')))));
+        $param .= '&winddir=' . rawurlencode(strval(GetValue($this->GetIDForIdent('Wind_Direction'))));
+        $param .= '&windspeedmph=' . rawurlencode(strval($this->FormatFloat($this->MSToMPH(GetValueFloat($this->GetIDForIdent('Windspeed_ms'))))));
+        $param .= '&windgustmph=' . rawurlencode(strval($this->FormatFloat($this->MSToMPH(GetValueFloat($this->GetIDForIdent('Windgust'))))));
         // &maxdailygust=4.47
-        $param .= '&tempf=' . rawurlencode($this->CelsiusToFahrenheit(GetValueFloat($this->GetIDForIdent('Outdoor_Temp'))));
+        $param .= '&tempf=' . rawurlencode(strval($this->CelsiusToFahrenheit(GetValueFloat($this->GetIDForIdent('Outdoor_Temp')))));
         $param .= '&humidity=' . rawurlencode(GetValue($this->GetIDForIdent('Outdoor_Humidity')));
         // &hourlyrainin=0.00
-        $param .= '&dailyrainin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent('dailyrainin'))));
-        $param .= '&weeklyrainin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent('weeklyrainin'))));
-        $param .= '&monthlyrainin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent('monthlyrainin'))));
+        $param .= '&dailyrainin=' . rawurlencode(strval($this->FormatFloat(GetValue($this->GetIDForIdent('dailyrainin')))));
+        $param .= '&weeklyrainin=' . rawurlencode(strval($this->FormatFloat(GetValue($this->GetIDForIdent('weeklyrainin')))));
+        $param .= '&monthlyrainin=' . rawurlencode(strval($this->FormatFloat(GetValue($this->GetIDForIdent('monthlyrainin')))));
         // &yearlyrainin=0.00
         // &totalrainin=0.00
-        $param .= '&tempinf=' . rawurlencode($this->CelsiusToFahrenheit(GetValueFloat($this->GetIDForIdent('Indoor_Temp'))));
-        $param .= '&humidityin=' . rawurlencode(intval(GetValue($this->GetIDForIdent('Indoor_Humidity'))));
-        $param .= '&baromrelin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent('baromin'))));
-        $param .= '&baromabsin=' . rawurlencode($this->FormatFloat(GetValue($this->GetIDForIdent('absbaromin'))));
-        $param .= '&uv=' . rawurlencode(GetValue($this->GetIDForIdent('UV')));
-        $param .= '&solarradiation=' . rawurlencode(GetValue($this->GetIDForIdent('solarradiation')));
+        $param .= '&tempinf=' . rawurlencode(strval($this->CelsiusToFahrenheit(GetValueFloat($this->GetIDForIdent('Indoor_Temp')))));
+        $param .= '&humidityin=' . rawurlencode(strval(intval(GetValue($this->GetIDForIdent('Indoor_Humidity')))));
+        $param .= '&baromrelin=' . rawurlencode(strval($this->FormatFloat(GetValue($this->GetIDForIdent('baromin')))));
+        $param .= '&baromabsin=' . rawurlencode(strval($this->FormatFloat(GetValue($this->GetIDForIdent('absbaromin')))));
+        $param .= '&uv=' . rawurlencode(strval(GetValue($this->GetIDForIdent('UV'))));
+        $param .= '&solarradiation=' . rawurlencode(strval(GetValue($this->GetIDForIdent('solarradiation'))));
         /*
-        $param .= '&dewptf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Dewpoint"))));
-        $param .= '&windchillf=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windchill"))));
-        $param .= '&rainin=' . rawurlencode($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("rainin"))));
+        $param .= '&dewptf=' . rawurlencode(strval($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Dewpoint")))));
+        $param .= '&windchillf=' . rawurlencode(strval($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("Windchill")))));
+        $param .= '&rainin=' . rawurlencode(strval($this->CelsiusToFahrenheit(GetValue($this->GetIDForIdent("rainin")))));
         */
         return $param;
     }
