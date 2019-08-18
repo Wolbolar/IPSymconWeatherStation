@@ -50,7 +50,7 @@ _Wunderground_ is to be selected as _Protocol Type_.
 
 ### c. Loading the module
 
-Open the IP Console's web console with _http://<IP-Symcon IP>:3777/console/_.
+Open the IP Console's web console with _http://{IP-Symcon IP}:3777/console/_.
 
 Then click on the module store icon (IP-Symcon > 5.1) in the upper right corner.
 
