@@ -678,6 +678,13 @@ class WeatherStation extends IPSModule
         if ($first_char == '/') {
             $url = 'http://' . $address . $payload;
         } else {
+            $pos_id = strpos($payload, "ID");
+            if($pos_id == 0)
+            {
+                $payload = "?" . $payload;
+            }
+            $pos_http = strpos($payload, "HTTP/1.0");
+            $payload = substr($payload, 0, $pos_http-1);
             $url = 'http://' . $address . '/' . $payload;
         }
         $this->SendDebug('Weatherstation:', $url, 0);
@@ -746,6 +753,11 @@ class WeatherStation extends IPSModule
             }
         }
         if (isset($data['winddir'])) {
+            $winddir = $data['winddir'];
+            $this->SendDebug('Weatherstation:', 'wind direction: ' . $winddir, 0);
+            $this->SetValue('Wind_Direction', intval($winddir));
+        }
+        if (isset($data['wi_nddir'])) {
             $winddir = $data['winddir'];
             $this->SendDebug('Weatherstation:', 'wind direction: ' . $winddir, 0);
             $this->SetValue('Wind_Direction', intval($winddir));
