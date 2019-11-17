@@ -678,12 +678,12 @@ class WeatherStation extends IPSModule
         if ($first_char == '/') {
             $url = 'http://' . $address . $payload;
         } else {
-            $pos_id = strpos($payload, "ID");
+            $pos_id = strpos($payload, 'ID');
             if($pos_id == 0)
             {
-                $payload = "?" . $payload;
+                $payload = '?' . $payload;
             }
-            $pos_http = strpos($payload, "HTTP/1.0");
+            $pos_http = strpos($payload, 'HTTP/1.0');
             $payload = substr($payload, 0, $pos_http-1);
             $url = 'http://' . $address . '/' . $payload;
         }
