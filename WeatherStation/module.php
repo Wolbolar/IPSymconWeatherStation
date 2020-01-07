@@ -313,11 +313,11 @@ class WeatherStation extends IPSModule
             $format = 'x7/' .                 // Override first 7 bytes
                       'n1Innentemperatur/' .  // Get the next 2 bytes
                       'x1/' .                 // Override 1 byte
-                      'n1Außentemperatur/' .  // Get the next 2 bytes
+                      'n1Aussentemperatur/' .  // Get the next 2 bytes
                       'x1/' .                 // Override 1 byte
                       'n1Taupunkt/' .         // Get the next 2 bytes
                       'x1/' .                 // Override 1 byte
-                      'n1Gefuehlt/' .         // Get the next 2 bytes
+                      'n1Gefuehlte/' .         // Get the next 2 bytes
                       'x1/' .                 // Override 1 byte
                       'n1Hitze/' .            // Get the next 2 bytes
                       'x1/' .                 // Override 1 byte
@@ -351,7 +351,7 @@ class WeatherStation extends IPSModule
                       'x1/' .                 // Override 1 byte
                       'n1UvRaw/' .            // Get the next 2 bytes
                       'x1/' .                 // Override 1 byte
-                      'C1UvIdxRaw';           // Get the next 2 bytes
+                      'C1UvIdx';           // Get the next 2 bytes
 
             $data = unpack($format, $buf);
             if ($data['Taupunkt'] >= pow(2, 15)) {
