@@ -1168,189 +1168,189 @@ class WeatherStation extends IPSModule
         if ($address != '') {
             $form = array_merge_recursive(
                 $form, [
-                         [
-                             'type'     => 'List',
-                             'name'     => 'weatherstation_info',
-                             'caption'  => 'Weatherstation Info',
-                             'rowCount' => 2,
-                             'add'      => false,
-                             'delete'   => false,
-                             'sort'     => [
-                                 'column'    => 'name',
-                                 'direction' => 'ascending'],
-                             'columns'  => [
-                                 [
-                                     'name'    => 'name',
-                                     'caption' => 'name',
-                                     'width'   => 'auto',
-                                     'visible' => true],
-                                 [
-                                     'name'    => 'mac',
-                                     'caption' => 'MAC',
-                                     'width'   => '150px', ],
-                                 [
-                                     'name'    => 'address',
-                                     'caption' => 'address',
-                                     'width'   => '150px',
-                                     'edit'    => [
-                                         'type' => 'ValidationTextBox']],
-                                 [
-                                     'name'    => 'port',
-                                     'caption' => 'port',
-                                     'width'   => '150px']],
-                             'values'   => [
-                                 [
-                                     'name'    => $this->ReadAttributeString('weatherstation_name'),
-                                     'mac'     => $this->ReadAttributeString('weatherstation_mac'),
-                                     'address' => $this->ReadAttributeString('weatherstation_address'),
-                                     'port'    => $this->ReadAttributeInteger('weatherstation_port')]]]]
+                    [
+                        'type'     => 'List',
+                        'name'     => 'weatherstation_info',
+                        'caption'  => 'Weatherstation Info',
+                        'rowCount' => 2,
+                        'add'      => false,
+                        'delete'   => false,
+                        'sort'     => [
+                            'column'    => 'name',
+                            'direction' => 'ascending'],
+                        'columns'  => [
+                            [
+                                'name'    => 'name',
+                                'caption' => 'name',
+                                'width'   => 'auto',
+                                'visible' => true],
+                            [
+                                'name'    => 'mac',
+                                'caption' => 'MAC',
+                                'width'   => '150px', ],
+                            [
+                                'name'    => 'address',
+                                'caption' => 'address',
+                                'width'   => '150px',
+                                'edit'    => [
+                                    'type' => 'ValidationTextBox']],
+                            [
+                                'name'    => 'port',
+                                'caption' => 'port',
+                                'width'   => '150px']],
+                        'values'   => [
+                            [
+                                'name'    => $this->ReadAttributeString('weatherstation_name'),
+                                'mac'     => $this->ReadAttributeString('weatherstation_mac'),
+                                'address' => $this->ReadAttributeString('weatherstation_address'),
+                                'port'    => $this->ReadAttributeInteger('weatherstation_port')]]]]
             );
         } else {
             $form = array_merge_recursive(
                 $form, [
-                         [
-                             'type'  => 'Label',
-                             'label' => 'Find Weatherstation'],
-                         [
-                             'type'    => 'Button',
-                             'label'   => 'Find Weatherstation',
-                             'onClick' => 'WeatherStation_FindStation($id, "255.255.255.255", 46000);']]
+                    [
+                        'type'  => 'Label',
+                        'label' => 'Find Weatherstation'],
+                    [
+                        'type'    => 'Button',
+                        'label'   => 'Find Weatherstation',
+                        'onClick' => 'WeatherStation_FindStation($id, "255.255.255.255", 46000);']]
             );
         }
         $form = array_merge_recursive(
             $form, [
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Altitude above sea level for the location of the weatherstation'],
-                     /*
+                [
+                    'type'  => 'Label',
+                    'label' => 'Altitude above sea level for the location of the weatherstation'],
+                /*
                      [
                          'type' => 'Label',
                          'label' => 'Altitude from the weather stationabove '.$altidude.' m'
                      ],
                      */ [
-                         'name'    => 'altitude_above_sea_level',
-                         'type'    => 'NumberSpinner',
-                         'caption' => 'altitude (m)'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Data for Ambient Weather'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'MAC address'],
-                     [
-                         'name'    => 'MAC',
-                         'type'    => 'ValidationTextBox',
-                         'caption' => 'MAC'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Ambient Weather Passkey'],
-                     [
-                         'name'    => 'Ambient_Passkey',
-                         'type'    => 'ValidationTextBox',
-                         'caption' => 'Passkey'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Wunderground Station ID'],
-                     [
-                         'name'    => 'Wunderground_Station_ID',
-                         'type'    => 'ValidationTextBox',
-                         'caption' => 'Station ID'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Wunderground Station Password'],
-                     [
-                         'name'    => 'Wunderground_Station_Password',
-                         'type'    => 'ValidationTextBox',
-                         'caption' => 'Station Password'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Weathercloud ID'],
-                     [
-                         'name'    => 'Weathercloud_ID',
-                         'type'    => 'ValidationTextBox',
-                         'caption' => 'Weathercloud ID'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Weathercloud Key'],
-                     [
-                         'name'    => 'Weathercloud_Key',
-                         'type'    => 'ValidationTextBox',
-                         'caption' => 'Weathercloud Key'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Update Interval Wunderground (seconds)'],
-                     [
-                         'name'    => 'UpdateInterval_Wunderground',
-                         'type'    => 'IntervalBox',
-                         'caption' => 'Seconds'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Update Interval Weathercloud (minutes)'],
-                     [
-                         'name'    => 'UpdateInterval_Weathercloud',
-                         'type'    => 'IntervalBox',
-                         'caption' => 'Minutes'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Update Interval Weatherbug (minutes)'],
-                     [
-                         'name'    => 'UpdateInterval_Weatherbug',
-                         'type'    => 'IntervalBox',
-                         'caption' => 'Minutes'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Update Interval Ambient Weather (seconds)'],
-                     [
-                         'name'    => 'UpdateInterval_AmbientWeather',
-                         'type'    => 'IntervalBox',
-                         'caption' => 'Seconds'],
-                     [
-                         'type'  => 'Label',
-                         'label' => 'Select units:'],
-                     [
-                         'name'    => 'temp_unit',
-                         'type'    => 'Select',
-                         'caption' => 'Temperature',
-                         'options' => [
-                             [
-                                 'label' => 'Celsius °C',
-                                 'value' => self::Celsius],
-                             [
-                                 'label' => 'Fahrenheit F',
-                                 'value' => self::Fahrenheit]]],
-                     [
-                         'name'    => 'speed_unit',
-                         'type'    => 'Select',
-                         'caption' => 'Wind Speed',
-                         'options' => [
-                             [
-                                 'label' => 'kmh',
-                                 'value' => self::kmh],
-                             [
-                                 'label' => 'mph',
-                                 'value' => self::mph]]],
-                     [
-                         'name'    => 'pressure_unit',
-                         'type'    => 'Select',
-                         'caption' => 'Air Pressure',
-                         'options' => [
-                             [
-                                 'label' => 'pascal',
-                                 'value' => self::pascal],
-                             [
-                                 'label' => 'bar',
-                                 'value' => self::bar]]],
-                     [
-                         'name'    => 'rain_unit',
-                         'type'    => 'Select',
-                         'caption' => 'Rain',
-                         'options' => [
-                             [
-                                 'label' => 'mm',
-                                 'value' => self::mm],
-                             [
-                                 'label' => 'inch',
-                                 'value' => self::inch]]]]
+                    'name'    => 'altitude_above_sea_level',
+                    'type'    => 'NumberSpinner',
+                    'caption' => 'altitude (m)'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'Data for Ambient Weather'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'MAC address'],
+                [
+                    'name'    => 'MAC',
+                    'type'    => 'ValidationTextBox',
+                    'caption' => 'MAC'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'Ambient Weather Passkey'],
+                [
+                    'name'    => 'Ambient_Passkey',
+                    'type'    => 'ValidationTextBox',
+                    'caption' => 'Passkey'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'Wunderground Station ID'],
+                [
+                    'name'    => 'Wunderground_Station_ID',
+                    'type'    => 'ValidationTextBox',
+                    'caption' => 'Station ID'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'Wunderground Station Password'],
+                [
+                    'name'    => 'Wunderground_Station_Password',
+                    'type'    => 'ValidationTextBox',
+                    'caption' => 'Station Password'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'Weathercloud ID'],
+                [
+                    'name'    => 'Weathercloud_ID',
+                    'type'    => 'ValidationTextBox',
+                    'caption' => 'Weathercloud ID'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'Weathercloud Key'],
+                [
+                    'name'    => 'Weathercloud_Key',
+                    'type'    => 'ValidationTextBox',
+                    'caption' => 'Weathercloud Key'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'Update Interval Wunderground (seconds)'],
+                [
+                    'name'    => 'UpdateInterval_Wunderground',
+                    'type'    => 'IntervalBox',
+                    'caption' => 'Seconds'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'Update Interval Weathercloud (minutes)'],
+                [
+                    'name'    => 'UpdateInterval_Weathercloud',
+                    'type'    => 'IntervalBox',
+                    'caption' => 'Minutes'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'Update Interval Weatherbug (minutes)'],
+                [
+                    'name'    => 'UpdateInterval_Weatherbug',
+                    'type'    => 'IntervalBox',
+                    'caption' => 'Minutes'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'Update Interval Ambient Weather (seconds)'],
+                [
+                    'name'    => 'UpdateInterval_AmbientWeather',
+                    'type'    => 'IntervalBox',
+                    'caption' => 'Seconds'],
+                [
+                    'type'  => 'Label',
+                    'label' => 'Select units:'],
+                [
+                    'name'    => 'temp_unit',
+                    'type'    => 'Select',
+                    'caption' => 'Temperature',
+                    'options' => [
+                        [
+                            'label' => 'Celsius °C',
+                            'value' => self::Celsius],
+                        [
+                            'label' => 'Fahrenheit F',
+                            'value' => self::Fahrenheit]]],
+                [
+                    'name'    => 'speed_unit',
+                    'type'    => 'Select',
+                    'caption' => 'Wind Speed',
+                    'options' => [
+                        [
+                            'label' => 'kmh',
+                            'value' => self::kmh],
+                        [
+                            'label' => 'mph',
+                            'value' => self::mph]]],
+                [
+                    'name'    => 'pressure_unit',
+                    'type'    => 'Select',
+                    'caption' => 'Air Pressure',
+                    'options' => [
+                        [
+                            'label' => 'pascal',
+                            'value' => self::pascal],
+                        [
+                            'label' => 'bar',
+                            'value' => self::bar]]],
+                [
+                    'name'    => 'rain_unit',
+                    'type'    => 'Select',
+                    'caption' => 'Rain',
+                    'options' => [
+                        [
+                            'label' => 'mm',
+                            'value' => self::mm],
+                        [
+                            'label' => 'inch',
+                            'value' => self::inch]]]]
         );
         return $form;
     }
