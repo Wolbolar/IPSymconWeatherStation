@@ -524,7 +524,7 @@ class WeatherStation extends IPSModule
         $ip    = $this->ReadAttributeString('weatherstation_address');
         $port = $this->ReadAttributeInteger('weatherstation_port');
         $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-
+        socket_set_option($sock, SOL_SOCKET, SO_RCVTIMEO, array ('sec' => 10, 'usec' => 0));
         if ($sock === false) {
             $this->SendDebug('Weatherstation Socket', 'socket_create() failed: ' . socket_strerror(socket_last_error()), 0);
         }
