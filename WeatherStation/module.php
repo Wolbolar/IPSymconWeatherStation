@@ -29,6 +29,7 @@ class WeatherStation extends IPSModule
 
         $this->RequireParent('{8062CF2B-600E-41D6-AD4B-1BA66C32D6ED}');
 
+        $this->RegisterPropertyBoolean('manual_configuration', false);
         $this->RegisterPropertyString('Wunderground_Station_ID', '');
         $this->RegisterPropertyString('Wunderground_Station_Password', '');
         $this->RegisterPropertyString('Weathercloud_ID', '');
@@ -142,7 +143,8 @@ class WeatherStation extends IPSModule
         if ($model == self::ELV_WS980WiFi || $model == self::Froggit_WH4000SE) {
             $this->SetUpdateIntervallData();
         }
-        $mac = $this->ReadPropertyString('MAC');
+        // $mac = $this->ReadPropertyString('MAC');
+        $mac = $this->ReadAttributeString('weatherstation_mac');
         if ($mac == '') {
             $this->SetStatus(201);
         } else {
@@ -279,6 +281,20 @@ class WeatherStation extends IPSModule
         $address = $this->ReadAttributeString('weatherstation_address');
         $port    = $this->ReadAttributeInteger('weatherstation_port');
         return ['name' => $name, 'mac' => $mac, 'address' => $address, 'port' => $port];
+    }
+
+    public function SetWeatherStationAttributes($weatherstation_info)
+    {
+
+        // $this->SendDebug('Weatherstation list data', json_encode($weatherstation_info), 0);
+        $this->SendDebug('Weatherstation list name', json_encode($weatherstation_info['name']), 0);
+        $this->WriteAttributeString('weatherstation_name', $weatherstation_info['name']);
+        $this->SendDebug('Weatherstation list mac', $weatherstation_info['mac'], 0);
+        $this->WriteAttributeString('weatherstation_mac', $weatherstation_info['mac']);
+        $this->SendDebug('Weatherstation list address', $weatherstation_info['address'], 0);
+        $this->WriteAttributeString('weatherstation_address', $weatherstation_info['address']);
+        $this->SendDebug('Weatherstation list port', $weatherstation_info['port'], 0);
+        $this->WriteAttributeInteger('weatherstation_port', $weatherstation_info['port']);
     }
 
     /** Get Version
@@ -1155,6 +1171,8 @@ class WeatherStation extends IPSModule
     protected function FormHead()
     {
         // $altidude = $this->altitude_above_sea_level();
+        $manual_configuration = $this->ReadPropertyBoolean('manual_configuration');
+        $this->SendDebug('Manual Configuration', json_encode($manual_configuration), 0);
         $form    = [
             [
                 'name'    => 'model',
@@ -1172,9 +1190,14 @@ class WeatherStation extends IPSModule
                         'value' => self::ELV_WS980WiFi],
                     [
                         'label' => 'Froggit WH4000SE',
-                        'value' => self::Froggit_WH4000SE]]]];
+                        'value' => self::Froggit_WH4000SE]]],
+            [
+                'name'    => 'manual_configuration',
+                'type'    => 'CheckBox',
+                'caption' => 'manual configuration']
+            ];
         $address = $this->ReadAttributeString('weatherstation_address');
-        if ($address != '') {
+        if ($address != '' || $manual_configuration == true) {
             $form = array_merge_recursive(
                 $form, [
                     [
@@ -1192,11 +1215,15 @@ class WeatherStation extends IPSModule
                                 'name'    => 'name',
                                 'caption' => 'name',
                                 'width'   => 'auto',
-                                'visible' => true],
+                                'visible' => true,
+                                'edit'    => [
+                                    'type' => 'ValidationTextBox']],
                             [
                                 'name'    => 'mac',
                                 'caption' => 'MAC',
-                                'width'   => '150px', ],
+                                'width'   => '150px',
+                                'edit'    => [
+                                    'type' => 'ValidationTextBox']],
                             [
                                 'name'    => 'address',
                                 'caption' => 'address',
@@ -1206,7 +1233,10 @@ class WeatherStation extends IPSModule
                             [
                                 'name'    => 'port',
                                 'caption' => 'port',
-                                'width'   => '150px']],
+                                'width'   => '150px',
+                                'edit'    => [
+                                    'type' => 'NumberSpinner']]],
+                        'onEdit' => 'WeatherStation_SetWeatherStationAttributes($id, $weatherstation_info);',
                         'values'   => [
                             [
                                 'name'    => $this->ReadAttributeString('weatherstation_name'),

@@ -59,7 +59,8 @@
       "Creating instance.": "Die Instanz wird erstellt.",
       "Device created.": "Gerät angelegt.",
       "interface closed.": "Interface geschlossen.",
-      "MAC must not be empty.": "MAC Adresse darf nicht leer sein."
+      "MAC must not be empty.": "MAC Adresse darf nicht leer sein.",
+      "manual configuration": "manuelle Konfiguration"
     }
   }
 }
