@@ -1233,6 +1233,8 @@ class WeatherStation extends IPSModule
                             [
                                 'name'    => 'port',
                                 'caption' => 'port',
+                                'minimum' => 0,
+                                'suffix' => 'minutes',
                                 'width'   => '150px',
                                 'edit'    => [
                                     'type' => 'NumberSpinner']]],
@@ -1320,28 +1322,36 @@ class WeatherStation extends IPSModule
                     'label' => 'Update Interval Wunderground (seconds)'],
                 [
                     'name'    => 'UpdateInterval_Wunderground',
-                    'type'    => 'IntervalBox',
+                    'type' => 'NumberSpinner',
+                    'minimum' => 0,
+                    'suffix' => 'Seconds',
                     'caption' => 'Seconds'],
                 [
                     'type'  => 'Label',
                     'label' => 'Update Interval Weathercloud (minutes)'],
                 [
                     'name'    => 'UpdateInterval_Weathercloud',
-                    'type'    => 'IntervalBox',
+                    'type' => 'NumberSpinner',
+                    'minimum' => 0,
+                    'suffix' => 'Minutes',
                     'caption' => 'Minutes'],
                 [
                     'type'  => 'Label',
                     'label' => 'Update Interval Weatherbug (minutes)'],
                 [
                     'name'    => 'UpdateInterval_Weatherbug',
-                    'type'    => 'IntervalBox',
+                    'type' => 'NumberSpinner',
+                    'minimum' => 0,
+                    'suffix' => 'Minutes',
                     'caption' => 'Minutes'],
                 [
                     'type'  => 'Label',
                     'label' => 'Update Interval Ambient Weather (seconds)'],
                 [
                     'name'    => 'UpdateInterval_AmbientWeather',
-                    'type'    => 'IntervalBox',
+                    'type' => 'NumberSpinner',
+                    'minimum' => 0,
+                    'suffix' => 'Minutes',
                     'caption' => 'Seconds'],
                 [
                     'type'  => 'Label',
