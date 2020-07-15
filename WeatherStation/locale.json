@@ -11,6 +11,8 @@
       "Please select model": "Bitte das Modell auswählen",
       "Altitude above sea level for the location of the weatherstation": "Höhe über dem Meeresspiegel des Standorts der Wetterstation",
       "altitude (m)": "Höhe (m)",
+      "altitude above sea level": "Höhe über dem Meeresspiegel",
+      "meter": "Meter",
       "Data for Ambient Weather": "Daten für Ambient Weather",
       "Ambient Weather Passkey": "Ambient Weather Passkey",
       "Indoor Temperature": "Innentemperatur",
@@ -47,12 +49,12 @@
       "Weathercloud Key": "Weathercloud Key",
       "Wunderground Station Password": "Wunderground Stations Passwort",
       "Station Password": "Stations Passwort",
-      "Update Interval Wunderground (seconds)": "Aktualisierungsintervall Wunderground (Sekunden)",
+      "Update Interval Wunderground": "Aktualisierungsintervall Wunderground",
       "Seconds": "Sekunden",
-      "Update Interval Weathercloud (minutes)": "Aktualisierungsintervall Weathercloud (Minuten)",
+      "Update Interval Weathercloud": "Aktualisierungsintervall Weathercloud",
       "Minutes": "Minuten",
-      "Update Interval Weatherbug (minutes)": "Aktualisierungsintervall Weatherbug (Minuten)",
-      "Update Interval Ambient Weather (seconds)": "Aktualisierungsintervall Ambient Weather (Sekunden)",
+      "Update Interval Weatherbug": "Aktualisierungsintervall Weatherbug",
+      "Update Interval Ambient Weather": "Aktualisierungsintervall Ambient Weather",
       "Select units:": "Einheiten auswählen",
       "Temperature": "Temperatur",
       "Wind Speed": "Windgeschwingigkeit",
@@ -60,7 +62,12 @@
       "Device created.": "Gerät angelegt.",
       "interface closed.": "Interface geschlossen.",
       "MAC must not be empty.": "MAC Adresse darf nicht leer sein.",
-      "manual configuration": "manuelle Konfiguration"
+      "manual configuration": "manuelle Konfiguration",
+      "units": "Einheiten",
+      "Ambient Weather": "Ambient Weather",
+      "Weatherbug": "Weatherbug",
+      "Weathercloud": "Weathercloud",
+      "Wunderground": "Wunderground"
     }
   }
 }
