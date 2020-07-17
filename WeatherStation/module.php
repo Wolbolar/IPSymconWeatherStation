@@ -293,7 +293,8 @@ class WeatherStation extends IPSModule
         return ['name' => $name, 'mac' => $mac, 'address' => $address, 'port' => $port];
     }
 
-    public function SetWeatherStationAttributes($weatherstation_info)
+    //todo datatype public method array
+    public function SetWeatherStationAttributes(array $weatherstation_info)
     {
 
         // $this->SendDebug('Weatherstation list data', json_encode($weatherstation_info), 0);
